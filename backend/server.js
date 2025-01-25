@@ -2,14 +2,14 @@ const express = require("express")
 const cors = require("cors")
 const mongoose = require("mongoose")
 const socket = require("socket.io")
-const userroutes = require("./routes/userRoutes")
+const api = require('./routes/api')
 
 const app = express()
 require('dotenv').config()
 
 app.use(cors());
 app.use(express.json());
-app.use('/api/auth', userroutes)
+app.use('/api', api)
 app.get('/', (req, res) => {
     return res.status(200).json("Welcome to Metaverse API");
 });

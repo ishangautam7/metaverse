@@ -27,7 +27,7 @@ describe("Authentication Tests", () => {
         const username = `user`;
         const password = "password123";
 
-        const response = await axios.post(`${BACKEND_URL}/api/auth/register`, {
+        const response = await axios.post(`${BACKEND_URL}/api/auth/user/register`, {
             username,
             email,
             password,
@@ -41,14 +41,14 @@ describe("Authentication Tests", () => {
         const password = "password123";
 
         // First registration
-        await axios.post(`${BACKEND_URL}/api/auth/register`, {
+        await axios.post(`${BACKEND_URL}/api/auth/user/register`, {
             username,
             email,
             password,
         });
 
         // Attempt to register again with the same email
-        const response = await axios.post(`${BACKEND_URL}/api/auth/register`, {
+        const response = await axios.post(`${BACKEND_URL}/api/auth/user/register`, {
             username: "newUser",
             email,
             password,
@@ -63,14 +63,14 @@ describe("Authentication Tests", () => {
         const password = "password123";
 
         // Register user first
-        await axios.post(`${BACKEND_URL}/api/auth/register`, {
+        await axios.post(`${BACKEND_URL}/api/auth/user/register`, {
             username,
             email,
             password,
         });
 
         // Log in
-        const response = await axios.post(`${BACKEND_URL}/api/auth/login`, {
+        const response = await axios.post(`${BACKEND_URL}/api/auth/user/login`, {
             email,
             password,
         });
@@ -86,7 +86,7 @@ describe("Authentication Tests", () => {
         const password = "password123";
 
         // Attempt to log in with the wrong password
-        const response = await axios.post(`${BACKEND_URL}/api/auth/login`, {
+        const response = await axios.post(`${BACKEND_URL}/api/auth/user/login`, {
             email,
             password: "wrongPassword",
         });
@@ -102,14 +102,14 @@ describe("Authentication Tests", () => {
 
 
         // Log in to get the token
-        const loginResponse = await axios.post(`${BACKEND_URL}/api/auth/login`, {
+        const loginResponse = await axios.post(`${BACKEND_URL}/api/auth/user/login`, {
             email,
             password,
         });
         const token = loginResponse.data.token;
         console.log("I am token", token)
         // Validate the token
-        const response = await axios.get(`${BACKEND_URL}/api/auth/validate-token`, {
+        const response = await axios.get(`${BACKEND_URL}/api/auth/user/validate-token`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -120,7 +120,7 @@ describe("Authentication Tests", () => {
     });
 
     test("Token validation fails with invalid token", async () => {
-        const response = await axios.get(`${BACKEND_URL}/api/auth/validate-token`, {
+        const response = await axios.get(`${BACKEND_URL}/api/auth/user/validate-token`, {
             headers: {
                 Authorization: `Bearer invalid_token`,
             },
