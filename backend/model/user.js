@@ -21,7 +21,8 @@ const UserSchema = new mongoose.Schema({
         maxlength: 64,
     },
     avatarId: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Avatar"
     },
     role:{
         type: String,

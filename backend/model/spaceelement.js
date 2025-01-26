@@ -1,30 +1,26 @@
-const mongoose = require("mongoose")
-const { v4: uuidv4 } = require("uuid");
+const mongoose = require("mongoose");
 
-const SpaceElement = new mongoose.Schema({
-    id: {
-        type: String,
-        unique: true,
-        default: () => uuidv4(),
-    },
-    elementId:{
-        type: String,
+const SpaceElementSchema = new mongoose.Schema({
+    spaceId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Space", // Reference to the Space model
         required: true,
     },
-    spaceId:{
-        type: String,
+    elementId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Element", // Reference to the Element model
         required: true,
     },
-    x:{
+    x: {
         type: Number,
         required: true,
     },
-    y:{
+    y: {
         type: Number,
         required: true,
     },
-},{
+}, {
     timestamps: true,
-})
+});
 
-module.exports = mongoose.model("SpaceElement", SpaceElement);
+module.exports = mongoose.model("SpaceElement", SpaceElementSchema);

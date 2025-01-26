@@ -1,4 +1,4 @@
-const {register, login, validate_token} = require("../controller/userController.js")
+const {register, login, validate_token} = require("../controller/user.js")
 const {metadata, metadatabulk} = require("../controller/metadata.js")
 const user = require("express").Router()
 

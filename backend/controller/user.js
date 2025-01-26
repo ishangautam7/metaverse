@@ -10,7 +10,6 @@ const generateToken = (id) => {
 module.exports.register = async(req, res, next)=>{
     try {
         const {username, email, password } = req.body;
-        console.log(req.body)
         const usernameCheck = await User.findOne({ email })
         if (usernameCheck) {
             return res.status(409).json({ msg: "Username already exists"})

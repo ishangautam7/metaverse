@@ -2,22 +2,25 @@ const mongoose = require("mongoose")
 const { v4: uuidv4 } = require("uuid");
 
 const ElementSchema = new mongoose.Schema({
-    id: {
-        type: String,
-        unique: true,
-        default: ()=> uuidv4(),
-    },
-    width:{
+    x:{
         type: Number,
         required: true,
     },
-    height:{
+    y:{
         type: Number,
         required: true,
     },
     imageUrl:{
         type: String,
     },
+    static:{
+        type: Boolean, //whether or user can sit on this element
+    },
+    mapId:{
+        type:  mongoose.Schema.Types.ObjectId,
+        ref: "Map",
+        required: true,
+    }
 },{
     timestamps: true,
 })

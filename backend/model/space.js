@@ -1,12 +1,6 @@
 const mongoose = require("mongoose")
-const { v4: uuidv4 } = require("uuid");
 
 const SpaceSchema = new mongoose.Schema({
-    id: {
-        type: String,
-        unique: true,
-        default: ()=> uuidv4(),
-    },
     name:{
         type: String,
         required: true,
@@ -19,6 +13,11 @@ const SpaceSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    mapId:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Map",
+        required: true
+    }
 },{
     timestamps: true,
 })
