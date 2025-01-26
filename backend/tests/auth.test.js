@@ -107,14 +107,12 @@ describe("Authentication Tests", () => {
             password,
         });
         const token = loginResponse.data.token;
-        console.log("I am token", token)
         // Validate the token
         const response = await axios.get(`${BACKEND_URL}/api/auth/user/validate-token`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         });
-        console.log("I am response", response)
 
         expect(response.status).toBe(200);
     });

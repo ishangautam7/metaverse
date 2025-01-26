@@ -1,6 +1,5 @@
 const express = require("express")
 const cors = require("cors")
-const mongoose = require("mongoose")
 const socket = require("socket.io")
 const api = require('./routes/api')
 
@@ -15,11 +14,7 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT
-mongoose.connect(process.env.MONGO_URI).then(()=>{
-    console.log("Connected to Database")
-}).catch((err)=>{
-    console.log(err)
-})
+require('./db')
 
 const server = app.listen(PORT, ()=>{
     console.log(`Server is running at http://localhost:${PORT}`)
