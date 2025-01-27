@@ -6,6 +6,7 @@ const admin = require('./admin')
 api.use("/auth/user", user)
 api.use("/space", space)
 api.use("/admin", admin)
+
 api.get("/avatars", (req, res)=>{
 
 })

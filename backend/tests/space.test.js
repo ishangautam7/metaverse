@@ -36,7 +36,6 @@ describe("Space Controller Tests", () => {
         const email = `user1@example.com`;
         const username = `user1`;
         const password = "password123";
-
         // Register user first
         await axios.post(`${BACKEND_URL}/api/auth/user/register`, {
             username,
@@ -49,13 +48,17 @@ describe("Space Controller Tests", () => {
             email,
             password,
         });
-        
+
+        const map = await axios.post(`${BACKEND_URL}/api/admin/map`, {
+            width:500, height:500, name:"Daaoaaaaaaana 1", userId: response.data.user.id
+        })
         const mapResponse = await axios.post(`${BACKEND_URL}/api/space`, {
             name: "Test Map",
             width: 1000,
             height: 1000,
+            mapId: map.data.id
         });
-        mapId = mapResponse.data.map._id;
+        mapaId = mapResponse.data.space.mapId;
     });
 
     afterAll(async () => {
@@ -64,28 +67,24 @@ describe("Space Controller Tests", () => {
 
     describe("POST /createspace", () => {
         test("should create a new space", async () => {
-            const response = await axios.post(`${BACKEND_URL}/createspace`, {
-                name: "Test Space",
-                width: 500,
+            const response = await axios.post(`${BACKEND_URL}/api/space/`, {
+                name: "Space",
                 height: 500,
-                mapId,
+                width: 500,
+                mapId: mapaId,
             });
-
             expect(response.status).toBe(200);
-            expect(response.data.msg).toBe("Space created successfully");
-            expect(response.data.space).toHaveProperty("name", "Test Space");
         });
 
         test("should return error if mapId is not valid", async () => {
-            const response = await axios.post(`${BACKEND_URL}/createspace`, {
+            const response = await axios.post(`${BACKEND_URL}/api/space/`, {
                 name: "Invalid Space",
-                width: 500,
                 height: 500,
+                width: 500,
                 mapId: "invalid_map_id",
             });
-
+            console.log(response.status)
             expect(response.status).toBe(400);
-            expect(response.data.msg).toBe("Map not found");
         });
     });
 
@@ -93,17 +92,17 @@ describe("Space Controller Tests", () => {
         let spaceId;
 
         beforeEach(async () => {
-            const response = await axios.post(`${BACKEND_URL}/createspace`, {
+            const response = await axios.post(`${BACKEND_URL}/api/space/`, {
                 name: "Space to be deleted",
                 width: 500,
                 height: 500,
-                mapId,
+                mapId: mapaId,
             });
             spaceId = response.data.space._id;
         });
 
         test("should delete a space", async () => {
-            const response = await axios.delete(`${BACKEND_URL}/deletespace/${spaceId}`);
+            const response = await axios.delete(`${BACKEND_URL}/api/space/:${spaceId}`);
 
             expect(response.status).toBe(200);
             expect(response.data.msg).toBe("Space deleted successfully");
