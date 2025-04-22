@@ -1,8 +1,12 @@
+"use client"
+
 import HeroImage from "@/assests/hero.png"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 export const Hero = () => {
+    const router = useRouter()
     return (
-        <section className="bg-black text-white min-h-[calc(100vh-8rem)] flex items-center justify-center py-20">
+        <section className="bg-black text-white min-h-[calc(100vh-7rem)] flex items-center justify-center py-20 px-2 sm:px-4 lg:px-6">
             <div className="max-w-7xl w-full flex flex-col md:flex-row items-center justify-between gap-10">
 
                 <div className="flex-1 text-center md:text-left">
@@ -13,7 +17,7 @@ export const Hero = () => {
                         Step into the future of interaction. Your 2D Metaverse playground — simple, elegant, immersive.
                     </p>
                     <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                        <button className="bg-white text-black font-semibold px-6 py-3 rounded-full hover:bg-gray-200 transition">
+                        <button onClick={()=>router.push('/register')} className="bg-white text-black font-semibold px-6 py-3 rounded-full hover:bg-gray-200 transition">
                             Get Started
                         </button>
                         <button className="border border-white px-6 py-3 rounded-full hover:bg-white hover:text-black transition">

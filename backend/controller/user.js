@@ -10,25 +10,30 @@ const generateToken = (id) => {
 module.exports.register = async(req, res, next)=>{
     try {
         const {username, email, password } = req.body;
-        const usernameCheck = await User.findOne({ email })
-        if (usernameCheck) {
-            return res.status(409).json({ msg: "Username already exists"})
+        if (!email || !password || !username) {
+            return res.status(400).json({ msg: 'All fields are required' });
         }
-        console.log(usernameCheck)
+
+        const usernameCheck = await User.findOne({ username })
+        console.log(usernameCheck, username)
+        if (usernameCheck) {
+            return res.status(400).json({ msg: "Username already exists"})
+        }
+
         const emailCheck = await User.findOne({ email })
         if (emailCheck) {
-            return res.status(409).json({ msg: "Email already exists"})
+            return res.status(400).json({ msg: "Email already exists"})
         }
-        console.log(emailCheck)
+
         const hashedPassword = await bcrypt.hash(password, 10)
         const user = await User.create({
             username, email, password: hashedPassword
         })
-        console.log(user)
         delete user.password;
         return res.status(201).json({msg:"User created successfully"})
     }
     catch (err) {
+        console.log(err)
        return res.status(500).json({msg:"Internal Server Error"})
     }
 }
@@ -36,11 +41,10 @@ module.exports.register = async(req, res, next)=>{
 module.exports.login = async(req, res, next)=>{
     try{
         const {email, password} = req.body;
-
         if (!email || !password) {
             return res.status(400).json({ msg: 'All fields are required' });
         }
-
+        
         const user = await User.findOne({email})
         if(!user){
             return res.status(400).json({msg:"User not found"})
@@ -51,6 +55,7 @@ module.exports.login = async(req, res, next)=>{
         }
         
         const token = generateToken(user._id);
+        console.log("HI")
         return res.status(200).json({
             msg:"Login successful",
             token,

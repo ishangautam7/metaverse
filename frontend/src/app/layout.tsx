@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
-
+import { Toaster } from "react-hot-toast";
 const dmSans = DM_Sans({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -17,7 +17,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="relative">
       <body className={(dmSans.className, "antialiased bg-[#EAEEFE]")}>
-        {children}
+      <Toaster toastOptions={{ duration: 4000,style: {background: '#333',color: '#fff'}}} />
+          {children}
       </body>
     </html>
   );
