@@ -14,7 +14,7 @@ export const useAuth = () => {
         if(!token){
             setIsAuthenticated(false)
             setIsLoading(false)
-            router.push('/')
+            router.push('/?showLogin=true')
             return
         }else{
             const verifyToken = async () =>{

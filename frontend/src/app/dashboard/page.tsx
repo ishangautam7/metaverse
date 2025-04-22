@@ -24,7 +24,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (isAuthenticated === false) {
       localStorage.removeItem("token");
-      router.push('/');  // Redirect if not authenticated
+      router.push('/'); 
     }
   }, [isAuthenticated, router]);
 
