@@ -3,103 +3,40 @@ const SpaceElement = require("../model/spaceelement")
 const Element = require("../model/element")
 const Map = require("../model/Map")
 const element = require("../model/element")
+const jwt = require("jsonwebtoken")
 
 module.exports.createspace = async (req, res)=>{
     try{
-        const {name, height, width, mapId} = req.body;
-        
-        const mapExists = await Map.findById(mapId);
-        if(!mapExists){
-            return res.status(400).json({msg:"Map not found"})
+        const {name, height, width, token, image} = req.body;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.id
+        if(!userId){
+            return res.status(400).json({msg:"Couldn't create map"})
         }
 
-        const space = await Space.create({name, height, width, mapId})
-
-        return res.status(200).json({msg:"Space created successfully", space})
+        const existingMap = await Map.findOne({userId, name})
+        if(existingMap){
+            return res.status(250).json({msg:"You already have a map with this name"})
+        }
+        const map = await Map.create({name, height, width, userId, image})
+        return res.status(200).json({msg:"Map created successfully", map})
     }catch(err){
         return res.status(500).json({msg:"Internal Server Error"})
     }
 }
 
-module.exports.deletespace = async (req, res)=>{
+module.exports.fetchmaps = async (req, res) =>{
     try{
-        const {id} = req.params;
-        const space = await Space.findById(id)
-        if(!space){
-            return res.status(400).json({msg:"No map found"})
-        }
-        
-        const map = await Map.findById(space.mapId);
-        if (!map) {
-            return res.status(400).json({ msg: "Map associated with space not found" });
+        const {token} = req.body;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.id
+        if(!userId){
+            return res.status(400).json({msg:"Couldn't create map"})
         }
 
-        if (req.user.id !== map.userId.toString()) {
-            return res.status(403).json({ msg: "Not authorized to delete this space" });
-        }
-        await Space.findByIdAndDelete(id)
-        return res.status(200).json({msg:"Space deleted successfully"})
-    }catch(err){
-        return res.status(500).json({msg:"Internal Server Error"})
-    }
-}
+        const userMaps = await Map.find({userId})
 
-module.exports.getallspace = async (req, res)=>{
-    try{
-        const spaces = await Space.find().populate("mapId", "name width height");
-
-        return res.status(200).json({
-            msg:"Spaces retrieved successfully",
-            spaces
-        })
-    }catch(err){
-        return res.status(500).json({msg:"Internal Server Error"})
-    }
-}
-
-module.exports.getspacebyid = async (req, res)=>{
-    try{
-        const id = req.params;
-    }catch(err){
-        return res.status(500).json({msg:"Internal Server Error"})
-    }
-}
-
-module.exports.addelement = async (req, res)=>{
-    try{
-        const {elementId, spaceId, x, y, width, height} = req.body;
-
-        const space = await Space.findById(spaceId)
-        if(!space){
-            return res.status(400).json({msg:"Space not found"})
-        }
-
-        if(X<0 || y<0 || x+width>space.width || y+height>space.height){
-            return res.status(400).json({msg:"Element is out of bound"})
-        }
-        const elements = await Element.find({spaceId})
-        for(element of elements){
-            const isColliding = 
-                x < element.x + element.width &&
-                x + width > element.x &&
-                y < element.y + element.height &&
-                y + height > element.y 
-            if(isColliding){
-                return res.status(400).json({msg:"Element collides with other element"})
-            }
-        }
-        const newElement = await Element.create({
-            elementId, spaceId, x, y, width, height
-        })
-        return res.status(200).json({msg:"Element added successfully", newElement})
-    }catch(err){
-        return res.status(500).json({msg:"Internal Server Error"})
-    }
-}
-
-module.exports.deleteelement = async (req, res)=>{
-    try{
-        
+        return res.status(200).json({ msg: "Maps fetched successfully", maps: userMaps });
     }catch(err){
         return res.status(500).json({msg:"Internal Server Error"})
     }

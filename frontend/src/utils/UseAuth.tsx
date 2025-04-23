@@ -1,40 +1,44 @@
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import axios from "axios";
 import { validateToken } from "./Routes";
 
 export const useAuth = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean |null>(null)
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
     const [user, setUser] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
     const router = useRouter()
-
-    useEffect(()=>{
+    const pathname = usePathname()
+    useEffect(() => {
         const token = localStorage.getItem("token")
-        if(!token){
+        if (!token) {
             setIsAuthenticated(false)
             setIsLoading(false)
-            router.push('/?showLogin=true')
+            if (pathname !== "/") {
+                router.push("/");
+            }
             return
-        }else{
-            const verifyToken = async () =>{
-                try{
-                    const response = await axios.get(validateToken, {headers:{
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    }})
+        } else {
+            const verifyToken = async () => {
+                try {
+                    const response = await axios.get(validateToken, {
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        }
+                    })
 
-                    if(response.status === 200){
+                    if (response.status === 200) {
                         setIsAuthenticated(true)
                         setIsLoading(false)
                         setUser(response.data.user)
-                    }else{
+                    } else {
                         setIsAuthenticated(false)
                         setIsLoading(false)
                         localStorage.removeItem("token")
                         return
                     }
-                }catch(err){
+                } catch (err) {
                     setIsAuthenticated(false)
                     localStorage.removeItem("token")
                     router.push('/')
@@ -45,5 +49,5 @@ export const useAuth = () => {
 
     }, [router])
 
-    return {isAuthenticated, user, isLoading}
+    return { isAuthenticated, user, isLoading }
 }

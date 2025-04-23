@@ -37,7 +37,7 @@ const RegisterPage = () => {
         const { data, status } = await axios.post(registerRoute, values)
         if (status === 201) {
           toast.success("Registered successfully")
-          router.push("/?showLogin=true")
+          router.push("/")
         } else {
           toast.error(data.msg || "Registration failed")
         }
