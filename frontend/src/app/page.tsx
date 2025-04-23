@@ -16,6 +16,7 @@ export default function Home() {
       router.push('/dashboard');
     }
   }, [isAuthenticated, router]);
+  console.log(user)
 
   if (isLoading) {
     return (

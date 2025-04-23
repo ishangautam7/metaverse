@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import axios from "axios";
 import { validateToken } from "./Routes";
+import next from "next";
 
 export const useAuth = () => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
@@ -42,6 +43,7 @@ export const useAuth = () => {
                     setIsAuthenticated(false)
                     localStorage.removeItem("token")
                     router.push('/')
+                    console.log(err)
                 }
             }
             verifyToken()
