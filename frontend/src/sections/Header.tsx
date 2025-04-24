@@ -13,7 +13,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 export const Header = () => {
     const [isClosed, setIsClosed] = useState(false)
     const [openLogin, setOpenLogin] = useState(false)
-    const [openRegister, setOpenRegister] = useState(false)
     const [showMobileMenu, setShowMobileMenu] = useState(false)
 
     const searchparams = useSearchParams()

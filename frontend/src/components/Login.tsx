@@ -104,7 +104,7 @@ export const Login = ({ onClose }: LoginProps) => {
                 </button>
 
                 <p className="text-sm text-white/60 text-center mt-4">
-                    Don't have an account?{" "}
+                    {" Don't have an account? "}
                     <Link href="/register" className="text-white underline hover:text-white/80">
                         Register
                     </Link>
