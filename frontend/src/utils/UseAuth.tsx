@@ -5,7 +5,7 @@ import { validateToken } from "./Routes"
 
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
-  const [user, setUser]               = useState<any>(null)
+  const [user, setUser]               = useState<unknown>(null)
   const [isLoading, setIsLoading]     = useState(true)
 
   const router   = useRouter()
@@ -42,7 +42,6 @@ export const useAuth = () => {
           localStorage.removeItem("token")
         }
       } catch {
-        // error caught—no need to name it if you’re not using it
         setIsAuthenticated(false)
         localStorage.removeItem("token")
         router.push("/")

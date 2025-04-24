@@ -56,9 +56,12 @@ export const Login = ({ onClose }: LoginProps) => {
                 onClose()
                 router.push('/dashboard')
             }
-        } catch (err: any) {
-            const errMsg = err.response?.data?.msg
-            toast.error(errMsg)
+        } catch (e: unknown) {
+            if (axios.isAxiosError(e) && e.response?.data && typeof e.response.data.msg === "string") {
+                toast.error(e.response.data.msg)
+              } else {
+                toast.error("An unexpected error occurred")
+              }
         }
     }
 

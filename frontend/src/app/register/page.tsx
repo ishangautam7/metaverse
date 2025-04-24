@@ -41,8 +41,15 @@ const RegisterPage = () => {
         } else {
           toast.error(data.msg || "Registration failed")
         }
-      } catch (err: any) {
-        toast.error(err.response?.data?.msg || "Something went wrong")
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err)) {
+          const msg = err.response?.data?.msg
+          toast.error(typeof msg === "string" ? msg : "Something went wrong")
+        } else if (err instanceof Error) {
+          toast.error(err.message)
+        } else {
+          toast.error("Something went wrong")
+        }
       }
     }
   }
