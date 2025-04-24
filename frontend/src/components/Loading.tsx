@@ -6,15 +6,14 @@ export const Loading = () => {
   const [animationDone, setAnimationDone] = useState(false);
 
   useEffect(() => {
-    // Simulate loading completion
     const timer = setTimeout(() => {
       setAnimationDone(true);
-    }, 3000); // Timer to simulate loading state
+    }, 3000); 
     return () => clearTimeout(timer);
   }, []);
 
   if (animationDone) {
-    return null; // If animation is done, stop showing the loading page
+    return null; 
   }
 
   return (

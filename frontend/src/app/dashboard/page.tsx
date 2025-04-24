@@ -39,8 +39,8 @@ export default function Dashboard() {
       const res = await axios.post(fetchmaproute, { token })
       if (res.status === 200) setMaps(res.data.maps)
       else toast.error("Failed to fetch maps")
-    } catch {
-      toast.error("Error fetching maps")
+    } catch(err) {
+      console.log(err)
     }
   }
   useEffect(() => { if (!isLoading) loadMaps() }, [isLoading])
