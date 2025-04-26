@@ -40,10 +40,12 @@ export const useAuth = () => {
         } else {
           setIsAuthenticated(false)
           localStorage.removeItem("token")
+          localStorage.removeItem("userId")
         }
       } catch {
         setIsAuthenticated(false)
         localStorage.removeItem("token")
+        localStorage.removeItem("userId")
         router.push("/")
       } finally {
         setIsLoading(false)

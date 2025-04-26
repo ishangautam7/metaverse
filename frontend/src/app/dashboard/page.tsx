@@ -12,9 +12,11 @@ import PopupForm from "./components/MapPopup"
 import axios from "axios"
 import toast from "react-hot-toast"
 import { mapcreateroute, fetchmaproute } from "@/utils/Routes"
+import { SearchBox } from "./components/SearchBox"
+import MapDetailsPopup from "./components/MapDetailsPopUp"
 
 type MapFormData = { name: string; width: number; height: number }
-interface MapData { _id: string; name: string; width: number; height: number; image?: string }
+interface MapData { _id: string; name: string; width: number; height: number; image?: string; mapUID: string }
 
 export default function Dashboard() {
   const router = useRouter()
@@ -22,24 +24,26 @@ export default function Dashboard() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [maps, setMaps] = useState<MapData[]>([])
   const [showCreate, setShowCreate] = useState(false)
-  const [roomId, setRoomId] = useState("")
+  const [roomId, setRoomId] = useState<number>(0)
+  const [foundMap, setFoundMap] = useState<MapData | null>(null)
+  const [selectedMapId, setSelectedMapId] = useState<string | null>(null)
+  const [showDetailsPopup, setShowDetailsPopup] = useState(false)
 
-  // Auth redirect
   useEffect(() => {
     if (isAuthenticated === false) {
       localStorage.removeItem("token")
+      localStorage.removeItem("userId")
       router.push("/")
     }
   }, [isAuthenticated, router])
 
-  // Fetch maps
   const loadMaps = async () => {
     try {
       const token = localStorage.getItem("token")
       const res = await axios.post(fetchmaproute, { token })
       if (res.status === 200) setMaps(res.data.maps)
       else toast.error("Failed to fetch maps")
-    } catch(err) {
+    } catch (err) {
       console.log(err)
     }
   }
@@ -66,19 +70,11 @@ export default function Dashboard() {
 
   // Join handler
   const handleJoin = async () => {
-    try {
-      const token = localStorage.getItem("token")
-      const res = await axios.post('/', { mapId: roomId, token })
-      if (res.status === 200) {
-        toast.success("Joined map!")
-        setRoomId("")
-        loadMaps()
-      } else {
-        toast.error(res.data.msg || "Failed to join")
-      }
-    } catch {
-      toast.error("Error joining map")
+    if (selectedMapId == null) {
+      toast.error("No map selected")
+      return
     }
+    setShowDetailsPopup(true)
   }
 
   return (
@@ -94,35 +90,24 @@ export default function Dashboard() {
           {/* Sidebar */}
           <div className="w-full md:w-1/4 bg-gradient-to-br from-black via-gray-900 to-black p-6 shadow-lg flex flex-col">
             {/* 1. Search Box */}
-            <div className="mb-4">
-              <label htmlFor="roomId" className="text-sm text-white/70 block mb-1">
-                Enter Map UID
-              </label>
-              <div className="flex gap-2">
-                <input
-                  id="roomId"
-                  type="text"
-                  value={roomId}
-                  onChange={e => setRoomId(e.target.value)}
-                  placeholder="Map UID"
-                  className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 transition"
-                />
-                <button
-                  onClick={handleJoin}
-                  className="px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
-                >
-                  🔍
-                </button>
-              </div>
-            </div>
+            <SearchBox roomId={roomId} setRoomId={setRoomId} setFoundMap={setFoundMap} />
 
             {/* 2. Join Map Button */}
-            <button
-              onClick={handleJoin}
-              className="w-full bg-transparent border-2 border-white text-white py-2 mb-4 rounded-lg font-semibold hover:bg-white/10 transition"
-            >
+            <button onClick={handleJoin} className="w-full bg-transparent border-2 border-white text-white py-2 mb-4 rounded-lg font-semibold hover:bg-white/10 transition">
               🔗 Join Map
             </button>
+
+            {/* show the searched map */}
+            {foundMap && (
+              <div onClick={() => { setSelectedMapId(foundMap._id)}} className={`my-4 cursor-pointer bg-white bg-opacity-10 backdrop-blur-md rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all ${selectedMapId === foundMap._id ? 'border-6 border-green-400' : 'border border-transparent'}`}>
+                <div className="h-32 relative">
+                  <Image src={MapImage || foundMap.image} alt={foundMap.name} layout="fill" objectFit="cover" />
+                </div>
+                <div className="p-2 text-center text-black text-sm font-medium">
+                  {foundMap.name}
+                </div>
+              </div>
+            )}
 
             {/* Spacer pushes create to bottom */}
             <div className="mt-auto">
@@ -140,17 +125,9 @@ export default function Dashboard() {
             <h2 className="text-xl font-semibold mb-4">Your Maps</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {maps.map(map => (
-                <div
-                  key={map._id}
-                  className="bg-white bg-opacity-10 backdrop-blur-md rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all cursor-pointer"
-                >
+                <div key={map._id} onClick={() => setSelectedMapId(map._id)} className={`cursor-pointer bg-white bg-opacity-10 backdrop-blur-md rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all ${selectedMapId === map._id ? 'border-2 border-green-400' : 'border border-transparent'}`}>
                   <div className="h-40 relative">
-                    <Image
-                      src={MapImage || map.image}
-                      alt={map.name}
-                      layout="fill"
-                      objectFit="cover"
-                    />
+                    <Image src={MapImage || map.image} alt={map.name} layout="fill" objectFit="cover"/>
                   </div>
                   <div className="p-3 text-center text-black text-sm font-medium">
                     {map.name}
@@ -161,6 +138,10 @@ export default function Dashboard() {
           </div>
         </main>
       </div>
+
+      {showDetailsPopup && selectedMapId && (
+        <MapDetailsPopup mapId={selectedMapId} onClose={() => setShowDetailsPopup(false)}/>
+      )}
     </AuthGuard>
   )
 }

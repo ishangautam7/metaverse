@@ -30,7 +30,7 @@ const NavBar = ({dropdownOpen, setDropdownOpen}: NavbarProps) => {
                         <Link href="/settings">
                             <p className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Settings</p>
                         </Link>
-                        <button onClick={()=>{localStorage.removeItem("token");router.push('/')}}>
+                        <button onClick={()=>{localStorage.removeItem("token");localStorage.removeItem("userId");router.push('/')}}>
                             <p className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Logout</p>
                         </button>
                     </div>

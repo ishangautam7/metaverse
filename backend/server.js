@@ -2,7 +2,8 @@ const express = require("express")
 const cors = require("cors")
 const socket = require("socket.io")
 const api = require('./routes/api')
-const path = require("path")
+const {Server} = require("socket.io")
+const http = require('http')
 
 const app = express()
 require('dotenv').config()
@@ -14,25 +15,55 @@ app.get('/', (req, res) => {
     return res.status(200).json("Welcome to Metaverse API");
 });
 
-
-const staticPath = path.join(__dirname, '../frontend/out');
-app.use(express.static(staticPath));
-
-app.get('*', (req, res) => {
-    res.sendFile(path.join(staticPath, 'index.html'));
-});
-
 const PORT = process.env.PORT
 require('./db')
 
-const server = app.listen(PORT, ()=>{
-    console.log(`Server is running at http://localhost:${PORT}`)
-    console.log(`Serving static files from: ${staticPath}`);
-
-})
+const server = http.createServer(app)
 
 const io = socket(server, {
     cors:{
         origin: "*"
     }
 })
+
+const players = {}
+
+io.on('connection', (socket)=>{
+    socket.on('join', ({mapUID, user})=>{
+        if(!players[mapUID]){
+            players[mapUID] = {}
+        }
+
+        players[mapUID][socket.id] = {
+            ...user, position: {x:100, y:100}
+        }
+
+        socket.join(mapUID)
+        io.to(mapUID).emit('playersUpdate', players[mapUID])
+    })
+
+    socket.on('move', ({mapUID, position})=>{
+        if(players[mapUID]?.[socket.id]){
+            players[mapUID][socket.id].position = position
+            io.to(mapUID).emit('playersUpdate', players[mapUID])
+        }
+    })
+
+    socket.on('chat', ({mapUID, message})=>{
+        const user = players[mapUID]?.[socket.id]
+        if(user){
+            io.to(mapUID).emit('chatMsg', {username: user.username, message})
+        }
+    })
+
+    socket.on('disconnect', ()=>{
+        for(const mapUID in players){
+            if(players[mapUID][socket.id]){
+                delete players[mapUID][socket.id]
+                io.to(mapUID).emit('playersUpdate', players[mapUID])
+            }
+        }
+    })
+})
+
+server.listen(PORT,'0.0.0.0', ()=>{console.log(`Server is running at localhost:/${PORT}`)})

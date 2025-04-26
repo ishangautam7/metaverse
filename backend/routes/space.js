@@ -1,12 +1,17 @@
 const { deletespace, getallspace, getspacebyid, addelement, deleteelement} = require("../controller/space1")
-const {createspace, fetchmaps} = require("../controller/space")
+const {createspace, fetchmaps, sendmap, singlemap, checkmap} = require("../controller/space")
 const space = require("express").Router()
 
+//used
 space.post('/', createspace)
-space.delete('/:spaceId', deletespace)
-space.get('/:spaceId', getspacebyid)
+space.post('/fetch', fetchmaps)
+space.get('/fetch/:ruid', sendmap)
+space.post('/singlemap', singlemap)
+space.post('/checkmap', checkmap)
+
+//unused
 space.get('/all', getallspace)
 space.post('/element', addelement)
+space.delete('/:spaceId', deletespace)
 space.delete('/element', deleteelement)
-space.post('/fetch', fetchmaps)
 module.exports = space;
