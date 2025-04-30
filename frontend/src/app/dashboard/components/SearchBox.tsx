@@ -32,7 +32,8 @@ export const SearchBox = ({roomId, setRoomId, setFoundMap}:SearchProps) => {
                 toast.error(response.data.msg)
                 setFoundMap(null)
             }else if(response.status === 200){
-                const myId = localStorage.getItem("userId")
+                const storedUser = JSON.parse(localStorage.getItem("user") ?? "{}");               
+                const myId = storedUser.id
                 if(myId == response.data.userId){
                     toast.success("You own this map")
                     return

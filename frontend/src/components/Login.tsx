@@ -53,7 +53,11 @@ export const Login = ({ onClose }: LoginProps) => {
             if (status === 200) {
                 toast.success("Successfully logged In")
                 localStorage.setItem("token", data.token)
-                localStorage.setItem("userId", data.user.id)
+                const user = {
+                    id: data.user.id,
+                    username: data.user.username,
+                }
+                localStorage.setItem("user", JSON.stringify(user))
                 onClose()
                 router.push('/dashboard')
             }

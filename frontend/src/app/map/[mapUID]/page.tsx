@@ -36,16 +36,17 @@ const CanvaRoomPage = () => {
     if (mapExists === null) {
         return <Loading />;
     }
-
+    const user = JSON.parse(localStorage.getItem("user")??"{}")
+    const username = user.username
     return (
-        // <AuthGuard>
+        <AuthGuard>
         <div>
             {1 &&
-                <CanvaMap mapUID={mapUID} width={1800} height={980} />
+                <CanvaMap username={username} mapUID={mapUID} width={1800} height={920} />
             }
         </div>
 
-        // </AuthGuard>
+        </AuthGuard>
     )
 }
 
