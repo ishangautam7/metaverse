@@ -8,6 +8,7 @@ import axios from "axios"
 import { checkmaproute } from "@/utils/Routes"
 import { useRouter } from "next/navigation"
 import { Loading } from "@/components/Loading"
+import MediaControls from "../components/MediaControls"
 
 const CanvaRoomPage = () => {
     const router = useRouter()
@@ -36,15 +37,14 @@ const CanvaRoomPage = () => {
     if (mapExists === null) {
         return <Loading />;
     }
-    const user = JSON.parse(localStorage.getItem("user")??"{}")
+    const user = JSON.parse(localStorage.getItem("user") ?? "{}")
     const username = user.username
     return (
         <AuthGuard>
-        <div>
-            {1 &&
-                <CanvaMap username={username} mapUID={mapUID} width={1800} height={920} />
-            }
-        </div>
+            <div>
+                <CanvaMap username={username} mapUID={mapUID} width={3500} height={2500} />
+                <MediaControls />
+            </div>
 
         </AuthGuard>
     )

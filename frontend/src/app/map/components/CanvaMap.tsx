@@ -27,6 +27,8 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
   const [position, setPosition] = useState({ x: width / 2, y: height / 2 });
+  const [camera, setCamera] = useState({ x: 0, y: 0 });
+  const [viewPortSize, setViewPortSize] = useState({ width: 0, height: 0 });
   const [avatarSize] = useState(40);
   const [bgColor] = useState("#f0f0f0");
   const [obstacles] = useState([
@@ -138,6 +140,21 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
     socket.emit("move", { mapUID, position });
   }, [position]);
 
+  useEffect(() => {
+    const updateSize = () => {
+      setViewPortSize({
+        width: window.innerWidth - 40,
+        height: window.innerHeight - 25,
+      });
+    };
+
+    updateSize();
+    window.addEventListener('resize', updateSize);
+
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+
+
   // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -168,6 +185,16 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [position, width, height, avatarSize]);
 
+  useEffect(() => {
+    const halfHeight = viewPortSize.height / 2;
+    const halfWidth = viewPortSize.width / 2;
+
+    setCamera({
+      x: Math.min(Math.max(position.x - halfWidth, 0), width - viewPortSize.width),
+      y: Math.min(Math.max(position.y - halfHeight, 0), height - viewPortSize.height),
+    });
+  }, [position, width, height, viewPortSize]);
+
   // Redraw canvas
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -177,60 +204,73 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
     if (!ctx) return;
 
     ctx.fillStyle = bgColor;
-    ctx.fillRect(0, 0, width, height);
-
-    ctx.fillStyle = "#888";
-    obstacles.forEach(({ x, y, w, h }) => {
-      ctx.fillRect(x, y, w, h);
-    });
+    ctx.fillRect(0, 0, viewPortSize.width, viewPortSize.height);
 
     ctx.strokeStyle = "#ccc";
     for (let x = 0; x < width; x += 50) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
+      const drawX = x - camera.x;
+      if (drawX >= 0 && drawX <= viewPortSize.width) {
+        ctx.beginPath();
+        ctx.moveTo(drawX, 0);
+        ctx.lineTo(drawX, viewPortSize.height);
+        ctx.stroke();
+      }
     }
+
     for (let y = 0; y < height; y += 50) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
+      const drawY = y - camera.y;
+      if (drawY >= 0 && drawY <= viewPortSize.height) {
+        ctx.beginPath();
+        ctx.moveTo(0, drawY);
+        ctx.lineTo(viewPortSize.width, drawY);
+        ctx.stroke();
+      }
     }
+
+    ctx.fillStyle = '#888';
+    obstacles.forEach(({ x, y, w, h }) => {
+      ctx.fillRect(x - camera.x, y - camera.y, w, h);
+    });
 
     Object.entries(players).forEach(([id, player]) => {
       const isSelf = player.position.x === position.x && player.position.y === position.y;
+      const drawX = player.position.x - camera.x;
+      const drawY = player.position.y - camera.y;
+
+      if (
+        drawX + avatarSize < 0 || drawX > viewPortSize.width ||
+        drawY + avatarSize < 0 || drawY > viewPortSize.height
+      ) return;
       ctx.fillStyle = isSelf ? "#4CAF50" : "#2196F3";
       ctx.beginPath();
-      ctx.arc(player.position.x + avatarSize / 2, player.position.y + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+      ctx.arc(drawX + avatarSize / 2, drawY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.fillStyle = "white";
       ctx.beginPath();
-      ctx.arc(player.position.x + avatarSize / 3, player.position.y + avatarSize / 3, 5, 0, Math.PI * 2);
-      ctx.arc(player.position.x + (avatarSize * 2) / 3, player.position.y + avatarSize / 3, 5, 0, Math.PI * 2);
+      ctx.arc(drawX + avatarSize / 3, drawY + avatarSize / 3, 5, 0, Math.PI * 2);
+      ctx.arc(drawX + avatarSize * 2 / 3, drawY + avatarSize / 3, 5, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.strokeStyle = "white";
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(player.position.x + avatarSize / 2, player.position.y + avatarSize / 2, 10, 0.1 * Math.PI, 0.9 * Math.PI);
-      ctx.stroke();
+      ctx.arc(drawX + avatarSize / 2, drawY + avatarSize / 2, 10, 0.1 * Math.PI, 0.9 * Math.PI); ctx.stroke();
 
       ctx.fillStyle = "black";
       ctx.font = "14px Arial";
-      ctx.fillText(player.username, player.position.x, player.position.y - 10);
+      ctx.fillText(player.username, drawX, drawY - 10);
     });
-  }, [players, position, width, height, avatarSize, bgColor, obstacles]);
-
+  }, [players, position, camera, avatarSize, bgColor, obstacles, viewPortSize, width, height]);
   return (
-    <div className="fixed inset-0 overflow-hidden flex flex-col items-center gap-4 my-4">
+    <div className="py-2 overflow-hidden flex flex-col items-center gap-4">
       <canvas
         ref={canvasRef}
-        width={width}
-        height={height}
+        width={viewPortSize.width}
+        height={viewPortSize.height}
         className="border-4 border-indigo-500 rounded shadow-lg bg-white"
       />
+      
       <div className="flex gap-4 mt-4">
         <div>
           <h2 className="text-lg font-bold">Your Video</h2>
