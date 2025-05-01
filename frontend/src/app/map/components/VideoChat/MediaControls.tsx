@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import {
     MicrophoneIcon,
     VideoCameraIcon,
@@ -9,15 +8,27 @@ import {
     XMarkIcon,
 } from '@heroicons/react/24/solid';
 
-const MediaControls = () => {
-    const [isMuted, setIsMuted] = useState(false);
-    const [isCameraOn, setIsCameraOn] = useState(true);
-    const [isSharingScreen, setIsSharingScreen] = useState(false);
+interface MediaControlsProps {
+    isMuted: boolean;
+    isCameraOn: boolean;
+    isSharingScreen: boolean;
+    onToggleMute: () => void;
+    onToggleCamera: () => void;
+    onToggleScreenShare: () => void;
+}
 
+const MediaControls = ({
+    isMuted,
+    isCameraOn,
+    isSharingScreen,
+    onToggleMute,
+    onToggleCamera,
+    onToggleScreenShare
+}: MediaControlsProps) => {
     return (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 bg-white border border-gray-300 shadow-xl rounded-full px-4 py-2 flex gap-4 items-center">
             <button
-                onClick={() => setIsMuted(!isMuted)}
+                onClick={onToggleMute}
                 className="relative p-2 rounded-full hover:bg-gray-100 transition"
                 title={isMuted ? 'Unmute' : 'Mute'}
             >
@@ -27,10 +38,8 @@ const MediaControls = () => {
                 )}
             </button>
 
-
-            {/* Camera Button */}
             <button
-                onClick={() => setIsCameraOn(!isCameraOn)}
+                onClick={onToggleCamera}
                 className="p-2 rounded-full hover:bg-gray-100 transition"
                 title={isCameraOn ? 'Turn off camera' : 'Turn on camera'}
             >
@@ -41,9 +50,8 @@ const MediaControls = () => {
                 )}
             </button>
 
-            {/* Screen Share Button */}
             <button
-                onClick={() => setIsSharingScreen(!isSharingScreen)}
+                onClick={onToggleScreenShare}
                 className="p-2 rounded-full hover:bg-gray-100 transition"
                 title={isSharingScreen ? 'Stop sharing screen' : 'Share screen'}
             >

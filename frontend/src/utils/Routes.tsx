@@ -1,6 +1,6 @@
 export const host =
   typeof window !== "undefined" && window.location.hostname.startsWith("192.168.")
-    ? "http://192.168.1.74:4000"
+    ? "http://192.168.101.9:4000"
     : "http://localhost:4000";
 
 

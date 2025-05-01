@@ -1,14 +1,14 @@
 "use client"
 
 import { useParams } from "next/navigation"
-import CanvaMap from "../components/CanvaMap"
+import CanvaMap from "../components/CanvaMap/CanvaMap"
 import AuthGuard from "@/utils/AuthGuard"
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { checkmaproute } from "@/utils/Routes"
 import { useRouter } from "next/navigation"
 import { Loading } from "@/components/Loading"
-import MediaControls from "../components/MediaControls"
+import MediaControls from "../components/VideoChat/MediaControls"
 
 const CanvaRoomPage = () => {
     const router = useRouter()
@@ -43,7 +43,6 @@ const CanvaRoomPage = () => {
         <AuthGuard>
             <div>
                 <CanvaMap username={username} mapUID={mapUID} width={3500} height={2500} />
-                <MediaControls />
             </div>
 
         </AuthGuard>
