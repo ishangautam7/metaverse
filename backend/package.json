@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "node server.js",
     "build": "npm install && cd ../frontend && npm ci && npm run build",
-    "test": "jest"
+    "test": "jest",
+    "dev": "nodemon server.js"
   },
   "author": "",
   "license": "ISC",
