@@ -1,6 +1,7 @@
 const axios2 = require("axios");
 
-const BACKEND_URL = "http://localhost:3000";
+// const BACKEND_URL = "http://localhost:3000";
+const BACKEND_URL = "https://metaverse-kz5d.onrender.com/";
 
 const axios = {
     post: async (...args) => {
