@@ -27,26 +27,24 @@ export const useCanvasDrawing = ({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Clear canvas
     ctx.fillStyle = "#f0f0f0";
     ctx.fillRect(0, 0, viewPortSize.width, viewPortSize.height);
 
-    // Draw grid
     drawGrid(ctx, camera, viewPortSize, width, height);
 
-    // Draw obstacles
     const obstacles: Obstacle[] = [
       { x: 400, y: 300, w: 100, h: 100 },
       { x: 800, y: 600, w: 150, h: 100 },
+      { x: 200, y: 600, w: 150, h: 100 },
+      { x: 700, y: 300, w: 150, h: 100 },
+      { x: 80, y: 60, w: 150, h: 100 },
     ];
     drawObstacles(ctx, camera, obstacles);
 
-    // Draw players
     drawPlayers(ctx, players, position, camera, viewPortSize);
   }, [players, position, camera, viewPortSize, width, height]);
 };
 
-// Helper functions for drawing different elements
 function drawGrid(ctx: CanvasRenderingContext2D, camera: Camera, viewPortSize: ViewPortSize, width: number, height: number) {
   ctx.strokeStyle = "#ccc";
   for (let x = 0; x < width; x += 50) {

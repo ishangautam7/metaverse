@@ -60,7 +60,7 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
         stream.getTracks().forEach(track => track.stop());
       }
     };
-  }, [isCameraOn]);
+  }, [isCameraOn, isMuted]);
 
   return (
     <div className="py-2 max-h-screen overflow-hidden flex flex-col items-center gap-4">

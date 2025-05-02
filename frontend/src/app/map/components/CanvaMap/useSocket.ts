@@ -20,12 +20,8 @@ export const useSocket = ({ mapUID, username, position, localStream }: UseSocket
     socket.on("playersUpdate", (players: PlayersMap) => {
       setPlayers(players);
     });
-
-    // ... other socket event handlers (WebRTC related)
-
     return () => {
       socket.off("playersUpdate");
-      // ... cleanup other socket listeners
     };
   }, [localStream, peerConnections]);
 
