@@ -44,7 +44,6 @@ export default function Dashboard() {
       if (res.status === 200) setMaps(res.data.maps)
       else toast.error("Failed to fetch maps")
     } catch (err) {
-      console.log(err)
     }
   }
   useEffect(() => { if (!isLoading) loadMaps() }, [isLoading])

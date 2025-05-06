@@ -1,8 +1,6 @@
-// components/VideoChat/VideoChat.tsx
 "use client";
 
 import { LocalVideo } from "./LocalVideo";
-import { RemoteVideo } from "./RemoteVideo";
 import MediaControls from "./MediaControls";
 interface VideoChatProps {
     localStream: MediaStream | null;
@@ -12,23 +10,28 @@ interface VideoChatProps {
     onToggleMute: () => void;
     onToggleCamera: () => void;
     onToggleScreenShare: () => void;
+    remoteStreams: { [key:string]:{
+        stream: MediaStream;
+        username: string;
+        position:{
+            x: number;
+            y: number;
+        }
+    }}
 }
 
-export const VideoChat = ({localStream, isMuted, isCameraOn, isSharingScreen, onToggleMute, onToggleCamera, onToggleScreenShare}: VideoChatProps) => {
+export const VideoChat = ({ localStream, isMuted, isCameraOn, isSharingScreen, onToggleMute, onToggleCamera, onToggleScreenShare, remoteStreams }: VideoChatProps) => {
     return (
         <>
-            <div className="flex gap-4">
-                <LocalVideo
-                    stream={localStream}
-                    isMuted={isMuted}
-                    isCameraOn={isCameraOn}
-                    isSharingScreen={isSharingScreen}
-                    onToggleMute={onToggleMute}
-                    onToggleCamera={onToggleCamera}
-                    onToggleScreenShare={onToggleScreenShare}
-                />
-                <RemoteVideo />
-            </div>
+            <LocalVideo
+                stream={localStream}
+                isMuted={isMuted}
+                isCameraOn={isCameraOn}
+                isSharingScreen={isSharingScreen}
+                onToggleMute={onToggleMute}
+                onToggleCamera={onToggleCamera}
+                onToggleScreenShare={onToggleScreenShare}
+            />
 
             <MediaControls
                 isMuted={isMuted}

@@ -26,7 +26,6 @@ export const SearchBox = ({roomId, setRoomId, setFoundMap}:SearchProps) => {
         if(roomId>0){
             router.push(`?ruid=${roomId}`);
             const ruid  = params.get('ruid')
-            console.log(ruid)
             const response = await axios.get(`${findMapByUIdRoute}/${ruid}`)
             if(response.status === 250){
                 toast.error(response.data.msg)

@@ -34,12 +34,11 @@ const MapDetailsPopup: React.FC<MapDetailsPopupProps> = ({ onClose, mapId }) => 
             try {
                 const response = await axios.post(getsinglemapdetailsroute, { mapId })
                 if (response.status === 200) {
-                    console.log(response)
                     setMapData(response.data.map) 
                     setOwner(response.data.owner)
                 }
             } catch (err) {
-                console.log("Error fetching map details:", err)
+
             }
         }
 

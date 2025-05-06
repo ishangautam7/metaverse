@@ -83,7 +83,6 @@ describe("Space Controller Tests", () => {
                 width: 500,
                 mapId: "invalid_map_id",
             });
-            console.log(response.status)
             expect(response.status).toBe(400);
         });
     });

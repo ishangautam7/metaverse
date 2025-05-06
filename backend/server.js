@@ -61,8 +61,8 @@ io.on('connection', (socket) => {
     socket.on('webrtc-offer', ({ to, offer }) => {
         io.to(to).emit('webrtc-offer', { from: socket.id, offer })
     })
-
-    socket.on('webrtc-offer', ({ to, answer }) => {
+    
+    socket.on('webrtc-answer', ({ to, answer }) => {
         io.to(to).emit('webrtc-answer', { from: socket.id, answer })
     })
 
@@ -75,6 +75,7 @@ io.on('connection', (socket) => {
             if (players[mapUID][socket.id]) {
                 delete players[mapUID][socket.id]
                 io.to(mapUID).emit('playersUpdate', players[mapUID])
+                io.to(mapUID).emit('playersLeft', socket.id)
             }
         }
     })

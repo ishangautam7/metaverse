@@ -15,7 +15,6 @@ module.exports.register = async(req, res, next)=>{
         }
 
         const usernameCheck = await User.findOne({ username })
-        console.log(usernameCheck, username)
         if (usernameCheck) {
             return res.status(400).json({ msg: "Username already exists"})
         }
@@ -33,7 +32,6 @@ module.exports.register = async(req, res, next)=>{
         return res.status(201).json({msg:"User created successfully"})
     }
     catch (err) {
-        console.log(err)
        return res.status(500).json({msg:"Internal Server Error"})
     }
 }
@@ -55,7 +53,6 @@ module.exports.login = async(req, res, next)=>{
         }
         
         const token = generateToken(user._id);
-        console.log("HI")
         return res.status(200).json({
             msg:"Login successful",
             token,

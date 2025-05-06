@@ -7,7 +7,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loading } from "@/components/Loading";
 import HomeGuard from "@/utils/HomeGuard";
-
+import { VideoCallPage } from "./stream/VideoCall";
+import { Video } from "lucide-react";
 export default function Home() {
   const router = useRouter()
   const { isAuthenticated, user, isLoading } = useAuth()
@@ -16,7 +17,6 @@ export default function Home() {
       router.push('/dashboard');
     }
   }, [isAuthenticated, router]);
-  console.log(user)
 
   if (isLoading) {
     return (
@@ -30,6 +30,7 @@ export default function Home() {
         <Header />
         <Hero />
       </HomeGuard>
+      {/* <VideoCallPage/> */}
     </div>
   )
 }
