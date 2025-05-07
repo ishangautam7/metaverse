@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import { usePlayerMovement } from "./usePlayerMovement";
 import { useSocket } from "./useSocket";
 import { useCanvasDrawing } from "./useCanvasDrawing";
+import { ChatOverlay } from "./ChatOverlay";
 
 interface AvatarCanvasProps {
   width: number;
@@ -15,7 +16,8 @@ interface AvatarCanvasProps {
 const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { position, camera, viewPortSize } = usePlayerMovement({ width, height });
-  const { players } = useSocket({ mapUID, username, position });
+  const { players, chatHistory, sendChatMessage } = useSocket({ mapUID, username, position });
+
   useCanvasDrawing({
     canvasRef,
     position,
@@ -34,6 +36,9 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
         height={viewPortSize.height}
         className="border-4 border-indigo-500 rounded shadow-lg bg-white"
       />
+
+      <ChatOverlay onSendMessage={sendChatMessage} chatHistory={chatHistory} />
+
     </div>
   );
 };

@@ -3,7 +3,7 @@ const cors = require("cors")
 const socket = require("socket.io")
 const api = require('./routes/api')
 const http = require('http')
-
+const ChatMessage = require('./model/chat')
 const app = express()
 require('dotenv').config()
 
@@ -51,12 +51,37 @@ io.on('connection', (socket) => {
         }
     })
 
-    socket.on('chat', ({ mapUID, message }) => {
-        const user = players[mapUID]?.[socket.id]
+    socket.on('chat', async ({ mapUID, message, timestamp }) => {
+        const user = players[mapUID]?.[socket.id];
         if (user) {
-            io.to(mapUID).emit('chatMsg', { username: user.username, message })
+            const chatMsg = {
+                username: user.username,
+                message,
+                timestamp
+            };
+            
+            await ChatMessage.create({
+                mapUID,
+                ...chatMsg
+            });
+
+            io.to(mapUID).emit('chatMsg', chatMsg);
         }
-    })
+    });
+
+    socket.on('getChatHistory', async ({ mapUID }) => {
+        try {
+            const history = await ChatMessage.find({ mapUID })
+                .sort({ createdAt: -1 })
+                .limit(10)
+                .lean();
+            
+            socket.emit('chatHistory', history.reverse());
+        } catch (error) {
+            console.error('Error fetching chat history:', error);
+        }
+    });
+
 
     socket.on('webrtc-offer', ({ to, offer }) => {
         io.to(to).emit('webrtc-offer', { from: socket.id, offer })
