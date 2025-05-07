@@ -9,7 +9,6 @@ interface UseCanvasDrawingProps {
   players: PlayersMap;
   width: number;
   height: number;
-  remoteStreams: { [key: string]: { stream: MediaStream; username: string; position: { x: number; y: number } } };
 }
 
 export const useCanvasDrawing = ({
@@ -19,9 +18,7 @@ export const useCanvasDrawing = ({
   viewPortSize,
   players,
   width,
-  height,
-  remoteStreams
-  
+  height,  
 }: UseCanvasDrawingProps) => {
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -44,8 +41,8 @@ export const useCanvasDrawing = ({
     ];
     drawObstacles(ctx, camera, obstacles);
 
-    drawPlayers(ctx, players, position, camera, viewPortSize, remoteStreams);
-  }, [players, position, camera, viewPortSize, width, height, remoteStreams]);
+    drawPlayers(ctx, players, position, camera, viewPortSize);
+  }, [players, position, camera, viewPortSize, width, height]);
 };
 
 function drawGrid(ctx: CanvasRenderingContext2D, camera: Camera, viewPortSize: ViewPortSize, width: number, height: number) {
@@ -84,7 +81,6 @@ function drawPlayers(
   currentPosition: Position,
   camera: Camera,
   viewPortSize: ViewPortSize,
-  remoteStreams: { [key: string]: { stream: MediaStream; username: string; position: { x: number; y: number } } }
 ) {
   const avatarSize = 40;
   const videoSize = 60;
@@ -122,11 +118,5 @@ function drawPlayers(
     ctx.fillStyle = "black";
     ctx.font = "14px Arial";
     ctx.fillText(player.username, drawX, drawY - 10);
-
-    //draw video container
-    if(remoteStreams[id]?.stream){
-      ctx.fillStyle = "rgba(0, 0, 0, 0,5)"
-      ctx.fillRect(drawX - 10, drawY - videoSize - 20, videoSize, videoSize)
-    }
   });
 }
