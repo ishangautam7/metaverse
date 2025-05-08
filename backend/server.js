@@ -82,18 +82,21 @@ io.on('connection', (socket) => {
         }
     });
 
-
-    socket.on('webrtc-offer', ({ to, offer }) => {
-        io.to(to).emit('webrtc-offer', { from: socket.id, offer })
+    socket.on('webrtc-offer', ({to, offer})=>{
+        for (const id in players[mapUID]){
+            if(id !== socket.id){
+                io.to(id).emit('webrtc-offer', {from: socket.id, offer})
+            }
+        }
     })
-    
+
     socket.on('webrtc-answer', ({ to, answer }) => {
-        io.to(to).emit('webrtc-answer', { from: socket.id, answer })
-    })
+        io.to(to).emit('webrtc-answer', { from: socket.id, answer });
+    });
 
-    socket.on('webrtc-ice', ({ to, candidate })=> {
-        io.to(to).emit('webrtc-ice', {from: socket.id, candidate})
-    })
+    socket.on('webrtc-ice', ({ to, candidate }) => {
+        io.to(to).emit('webrtc-ice', { from: socket.id, candidate });
+    });
 
     socket.on('disconnect', () => {
         for (const mapUID in players) {
