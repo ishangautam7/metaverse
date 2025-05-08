@@ -68,7 +68,7 @@ export const ChatOverlay = ({ onSendMessage, chatHistory }: ChatOverlayProps) =>
   return (
     <div className="absolute bottom-6 left-6 z-50 w-80 pointer-events-none">
       {!isOpen && !showMessages && (
-        <div className="text-white/30 text-sm mb-2">Press ENTER to chat</div>
+        <div className="text-fuchsia-800 border-blue-500 border-2 text-sm px-2">Press ENTER to chat</div>
       )}
 
       {(isOpen || showMessages) && (

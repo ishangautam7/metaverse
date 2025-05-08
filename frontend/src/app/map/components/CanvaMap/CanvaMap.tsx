@@ -5,6 +5,7 @@ import { usePlayerMovement } from "./usePlayerMovement";
 import { useSocket } from "./useSocket";
 import { useCanvasDrawing } from "./useCanvasDrawing";
 import { ChatOverlay } from "./ChatOverlay";
+import { VideoChat } from "../VideoChat/VideoChat";
 
 interface AvatarCanvasProps {
   width: number;
@@ -36,6 +37,8 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
         height={viewPortSize.height}
         className="border-4 border-indigo-500 rounded shadow-lg bg-white"
       />
+
+      <VideoChat />
 
       <ChatOverlay onSendMessage={sendChatMessage} chatHistory={chatHistory} />
 
