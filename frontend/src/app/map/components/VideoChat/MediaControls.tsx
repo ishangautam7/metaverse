@@ -33,7 +33,7 @@ export const MediaControls = ({
         <Monitor className={isScreenSharing ? "text-yellow-600" : "text-blue-600"} />
       </button>
 
-      <button onClick={handleLeave} className="p-2 rounded-back bg-red-100 hover:bg-red-200 transition-colors">
+      <button onClick={handleLeave} className="p-2 rounded bg-red-100 hover:bg-red-200 transition-colors">
         <PhoneOff className="text-red-600" />
       </button>
     </div>
