@@ -59,7 +59,7 @@ io.on('connection', (socket) => {
                 message,
                 timestamp
             };
-            
+
             await ChatMessage.create({
                 mapUID,
                 ...chatMsg
@@ -75,27 +75,40 @@ io.on('connection', (socket) => {
                 .sort({ createdAt: -1 })
                 .limit(10)
                 .lean();
-            
+
             socket.emit('chatHistory', history.reverse());
         } catch (error) {
             console.error('Error fetching chat history:', error);
         }
     });
 
-    socket.on('webrtc-offer', ({to, offer})=>{
-        for (const id in players[mapUID]){
-            if(id !== socket.id){
-                io.to(id).emit('webrtc-offer', {from: socket.id, offer})
-            }
-        }
-    })
+    // socket.on('webrtc-offer', ({to, offer})=>{
+    //     for (const id in players[mapUID]){
+    //         if(id !== socket.id){
+    //             io.to(id).emit('webrtc-offer', {from: socket.id, offer})
+    //         }
+    //     }
+    // })
 
-    socket.on('webrtc-answer', ({ to, answer }) => {
-        io.to(to).emit('webrtc-answer', { from: socket.id, answer });
+    // socket.on('webrtc-answer', ({ to, answer }) => {
+    //     io.to(to).emit('webrtc-answer', { from: socket.id, answer });
+    // });
+
+    // socket.on('webrtc-ice', ({ to, candidate }) => {
+    //     io.to(to).emit('webrtc-ice', { from: socket.id, candidate });
+    // });
+
+    // In your socket.io server code
+    socket.on('webrtc-offer', ({ mapUID, to, offer }) => {
+        io.to(to).emit('webrtc-offer', { from: socket.id, offer, mapUID });
     });
 
-    socket.on('webrtc-ice', ({ to, candidate }) => {
-        io.to(to).emit('webrtc-ice', { from: socket.id, candidate });
+    socket.on('webrtc-answer', ({ mapUID, to, answer }) => {
+        io.to(to).emit('webrtc-answer', { from: socket.id, answer, mapUID });
+    });
+
+    socket.on('webrtc-ice', ({ mapUID, to, candidate }) => {
+        io.to(to).emit('webrtc-ice', { from: socket.id, candidate, mapUID });
     });
 
     socket.on('disconnect', () => {

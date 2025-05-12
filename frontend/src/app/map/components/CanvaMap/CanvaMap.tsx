@@ -38,7 +38,7 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
         className="border-4 border-indigo-500 rounded shadow-lg bg-white"
       />
 
-      <VideoChat />
+      <VideoChat mapUID={mapUID.toString()} />
 
       <ChatOverlay onSendMessage={sendChatMessage} chatHistory={chatHistory} />
 

@@ -8,7 +8,6 @@ import axios from "axios"
 import { checkmaproute } from "@/utils/Routes"
 import { useRouter } from "next/navigation"
 import { Loading } from "@/components/Loading"
-import MediaControls from "../components/VideoChat/MediaControls"
 
 const CanvaRoomPage = () => {
     const router = useRouter()
