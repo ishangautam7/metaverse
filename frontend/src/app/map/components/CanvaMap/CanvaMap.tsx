@@ -41,7 +41,6 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
       <VideoChat mapUID={mapUID.toString()} />
 
       <ChatOverlay onSendMessage={sendChatMessage} chatHistory={chatHistory} />
-
     </div>
   );
 };

@@ -1,17 +1,21 @@
-"use client"
-
 import { useEffect, useRef, useState } from "react";
 import { MediaControls } from "./MediaControls";
 import { useRouter } from "next/navigation";
-import { io, Socket } from "socket.io-client";
+import { socket } from "../../lib/socket";
 
-type PeerConnection = {
+interface PeerConnection {
   pc: RTCPeerConnection;
   stream: MediaStream | null;
-};
+}
 
 const iceServers = {
-  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+  iceServers: [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" },
+    { urls: "stun:stun2.l.google.com:19302" },
+    { urls: "stun:stun3.l.google.com:19302" },
+    { urls: "stun:stun4.l.google.com:19302" },
+  ],
 };
 
 export const VideoChat = ({ mapUID }: { mapUID: string }) => {
@@ -21,7 +25,6 @@ export const VideoChat = ({ mapUID }: { mapUID: string }) => {
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [peers, setPeers] = useState<Record<string, PeerConnection>>({});
 
-  const socketRef = useRef<Socket | null>(null);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideosRef = useRef<Record<string, HTMLVideoElement | null>>({});
   const localStreamRef = useRef<MediaStream | null>(null);
@@ -36,7 +39,9 @@ export const VideoChat = ({ mapUID }: { mapUID: string }) => {
         });
 
         localStreamRef.current = stream;
-        updateLocalVideo(stream);
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
       } catch (error) {
         console.error("Error accessing media devices:", error);
       }
@@ -48,37 +53,26 @@ export const VideoChat = ({ mapUID }: { mapUID: string }) => {
     };
   }, []);
 
-  // Socket initialization and cleanup
   useEffect(() => {
-    socketRef.current = io();
-    setupSocketListeners();
+    socket.on("playersUpdate", handlePlayersUpdate);
+    socket.on("playerLeft", handlePlayerLeft);
+    socket.on("webrtc-offer", handleOffer);
+    socket.on("webrtc-answer", handleAnswer);
+    socket.on("webrtc-ice", handleIceCandidate);
 
     return () => {
-      socketRef.current?.disconnect();
+      socket.off("playersUpdate");
+      socket.off("playerLeft");
+      socket.off("webrtc-offer");
+      socket.off("webrtc-answer");
+      socket.off("webrtc-ice");
       Object.values(peers).forEach(({ pc }) => pc.close());
     };
   }, []);
 
-  const updateLocalVideo = (stream: MediaStream | null) => {
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = stream;
-      localVideoRef.current.style.display = stream ? "block" : "none";
-    }
-  };
-
-  const setupSocketListeners = () => {
-    if (!socketRef.current) return;
-
-    socketRef.current.on("playersUpdate", handlePlayersUpdate);
-    socketRef.current.on("playerLeft", handlePlayerLeft);
-    socketRef.current.on("webrtc-offer", handleOffer);
-    socketRef.current.on("webrtc-answer", handleAnswer);
-    socketRef.current.on("webrtc-ice", handleIceCandidate);
-  };
-
   const handlePlayersUpdate = (users: Record<string, any>) => {
     Object.keys(users).forEach(userId => {
-      if (userId !== socketRef.current?.id && !peers[userId]) {
+      if (userId !== socket.id && !peers[userId]) {
         createPeerConnection(userId);
       }
     });
@@ -100,14 +94,15 @@ export const VideoChat = ({ mapUID }: { mapUID: string }) => {
     
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => {
-        if (track.kind === "video" && !isCameraOn) return;
-        pc.addTrack(track, localStreamRef.current!);
+        if (localStreamRef.current) {
+          pc.addTrack(track, localStreamRef.current);
+        }
       });
     }
 
     pc.onicecandidate = (event) => {
-      if (event.candidate && socketRef.current) {
-        socketRef.current.emit("webrtc-ice", {
+      if (event.candidate) {
+        socket.emit("webrtc-ice", {
           mapUID,
           to: userId,
           candidate: event.candidate,
@@ -126,7 +121,7 @@ export const VideoChat = ({ mapUID }: { mapUID: string }) => {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
-      socketRef.current?.emit("webrtc-offer", {
+      socket.emit("webrtc-offer", {
         mapUID,
         to: userId,
         offer,
@@ -143,14 +138,15 @@ export const VideoChat = ({ mapUID }: { mapUID: string }) => {
 
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => {
-        if (track.kind === "video" && !isCameraOn) return;
-        pc.addTrack(track, localStreamRef.current!);
+        if (localStreamRef.current) {
+          pc.addTrack(track, localStreamRef.current);
+        }
       });
     }
 
     pc.onicecandidate = (event) => {
-      if (event.candidate && socketRef.current) {
-        socketRef.current.emit("webrtc-ice", {
+      if (event.candidate) {
+        socket.emit("webrtc-ice", {
           mapUID,
           to: from,
           candidate: event.candidate,
@@ -170,7 +166,7 @@ export const VideoChat = ({ mapUID }: { mapUID: string }) => {
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
 
-      socketRef.current?.emit("webrtc-answer", {
+      socket.emit("webrtc-answer", {
         mapUID,
         to: from,
         answer,
@@ -213,7 +209,9 @@ export const VideoChat = ({ mapUID }: { mapUID: string }) => {
 
         localStreamRef.current?.getTracks().forEach(track => track.stop());
         localStreamRef.current = stream;
-        updateLocalVideo(stream);
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
 
         Object.values(peers).forEach(({ pc }) => {
           const videoTrack = stream.getVideoTracks()[0];
@@ -226,11 +224,15 @@ export const VideoChat = ({ mapUID }: { mapUID: string }) => {
         });
       } else {
         localStreamRef.current?.getVideoTracks().forEach(track => track.stop());
-        updateLocalVideo(null);
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = null;
+        }
 
         Object.values(peers).forEach(({ pc }) => {
           const sender = pc.getSenders().find(s => s.track?.kind === "video");
-          sender?.replaceTrack(null);
+          if (sender) {
+            sender.replaceTrack(null);
+          }
         });
       }
     } catch (error) {
@@ -246,10 +248,8 @@ export const VideoChat = ({ mapUID }: { mapUID: string }) => {
     try {
       if (newMicState) {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        
         const audioTrack = stream.getAudioTracks()[0];
-        localStreamRef.current?.getAudioTracks().forEach(track => track.stop());
-        
+
         if (localStreamRef.current) {
           localStreamRef.current.addTrack(audioTrack);
         }
@@ -258,16 +258,21 @@ export const VideoChat = ({ mapUID }: { mapUID: string }) => {
           const sender = pc.getSenders().find(s => s.track?.kind === "audio");
           if (sender) {
             sender.replaceTrack(audioTrack);
-          } else {
-            pc.addTrack(audioTrack, localStreamRef.current!);
+          } else if (localStreamRef.current) {
+            pc.addTrack(audioTrack, localStreamRef.current);
           }
         });
       } else {
-        localStreamRef.current?.getAudioTracks().forEach(track => track.stop());
-        
+        localStreamRef.current?.getAudioTracks().forEach(track => {
+          track.stop();
+          localStreamRef.current?.removeTrack(track);
+        });
+
         Object.values(peers).forEach(({ pc }) => {
           const sender = pc.getSenders().find(s => s.track?.kind === "audio");
-          sender?.replaceTrack(null);
+          if (sender) {
+            sender.replaceTrack(null);
+          }
         });
       }
     } catch (error) {
@@ -284,12 +289,13 @@ export const VideoChat = ({ mapUID }: { mapUID: string }) => {
 
         Object.values(peers).forEach(({ pc }) => {
           const sender = pc.getSenders().find(s => s.track?.kind === "video");
-          sender?.replaceTrack(screenTrack);
+          if (sender) {
+            sender.replaceTrack(screenTrack);
+          }
         });
 
         screenTrack.onended = () => {
           toggleScreenShare();
-          setIsScreenSharing(false);
         };
 
         setIsScreenSharing(true);
@@ -303,62 +309,61 @@ export const VideoChat = ({ mapUID }: { mapUID: string }) => {
 
       Object.values(peers).forEach(({ pc }) => {
         const sender = pc.getSenders().find(s => s.track?.kind === "video");
-        if (videoTrack) {
-          sender?.replaceTrack(videoTrack);
+        if (sender && videoTrack) {
+          sender.replaceTrack(videoTrack);
         }
       });
 
       setIsScreenSharing(false);
+      screenTrackRef.current = null;
     }
   };
 
   const handleLeave = () => {
-    router.push("/");
+    router.push("/dashboard");
     localStreamRef.current?.getTracks().forEach(track => track.stop());
-    socketRef.current?.disconnect();
+    Object.values(peers).forEach(({ pc }) => pc.close());
   };
 
   return (
-    <div className="relative h-screen w-full bg-gray-900">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 pt-20">
+    <div className="relative">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
         {Object.entries(peers).map(([userId, { stream }]) => (
-          <video
-            key={userId}
-            ref={el => {
-              if (el) {
-                remoteVideosRef.current[userId] = el;
-                el.srcObject = stream;
-              }
-            }}
-            autoPlay
-            playsInline
-            className="w-full h-48 rounded-lg bg-black"
-          />
+          <div key={userId} className="relative">
+            <video
+              ref={el => {
+                if (el) {
+                  remoteVideosRef.current[userId] = el;
+                  el.srcObject = stream;
+                }
+              }}
+              autoPlay
+              playsInline
+              className="w-full h-48 rounded-lg bg-black/50 object-cover"
+            />
+          </div>
         ))}
       </div>
 
-      <div className="fixed top-4 z-10 lg:right-6">
+      <div className="fixed top-4 right-4 z-50">
         <video
           ref={localVideoRef}
           autoPlay
           muted
           playsInline
-          className="w-50 h-40 rounded-lg bg-black border-2 border-blue-500 shadow-xl"
-          style={{ display: isCameraOn ? 'block' : 'none' }}
+          className="w-48 h-36 rounded-lg bg-black/50 border-2 border-blue-500"
         />
       </div>
 
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-20">
-        <MediaControls
-          isCameraOn={isCameraOn} 
-          setIsCameraOn={setIsCameraOn}
-          isMicOn={isMicOn}
-          setIsMicOn={setIsMicOn}
-          isScreenSharing={isScreenSharing}
-          toggleScreenShare={toggleScreenShare}
-          handleLeave={handleLeave}
-        />
-      </div>
+      <MediaControls
+        isCameraOn={isCameraOn}
+        setIsCameraOn={toggleCamera}
+        isMicOn={isMicOn}
+        setIsMicOn={toggleMic}
+        isScreenSharing={isScreenSharing}
+        toggleScreenShare={toggleScreenShare}
+        handleLeave={handleLeave}
+      />
     </div>
   );
 };
