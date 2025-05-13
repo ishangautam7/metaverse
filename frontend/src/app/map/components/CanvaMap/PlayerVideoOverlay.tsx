@@ -16,7 +16,7 @@ export const PlayerVideoOverlay = ({ stream, position, camera, viewPortSize, use
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
     }
-  }, [stream, position]);
+  }, [stream]);
 
   const drawX = position.x - camera.x;
   const drawY = position.y - camera.y;
@@ -28,10 +28,10 @@ export const PlayerVideoOverlay = ({ stream, position, camera, viewPortSize, use
 
   return (
     <div
-      className="absolute z-50 pointer-events-none"
+      className="absolute z-50"
       style={{
-        left: `${drawX - videoSize/2 + 20}px`, // Center above avatar
-        top: `${drawY - videoSize - 10}px`, // Position above avatar
+        left: `${drawX - videoSize/2 + 20}px`,
+        top: `${drawY - videoSize - 10}px`,
         width: `${videoSize}px`,
         height: `${videoSize}px`
       }}
@@ -39,12 +39,12 @@ export const PlayerVideoOverlay = ({ stream, position, camera, viewPortSize, use
       <video
         ref={videoRef}
         autoPlay
-        muted
+        playsInline
         className="w-full h-full rounded-lg border-2 border-blue-500 shadow-md bg-black"
       />
       <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-center py-1 text-sm truncate">
         {username}
       </div>
     </div>
-  )
+  );
 };
