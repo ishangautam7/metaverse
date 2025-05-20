@@ -5,7 +5,6 @@ import { usePlayerMovement } from "./usePlayerMovement";
 import { useSocket } from "./useSocket";
 import { useCanvasDrawing } from "./useCanvasDrawing";
 import { ChatOverlay } from "./ChatOverlay";
-import { VideoChat } from "../VideoChat/VideoChat";
 import { PlayerVideoOverlay } from "./PlayerVideoOverlay";
 
 interface AvatarCanvasProps {
@@ -18,7 +17,7 @@ interface AvatarCanvasProps {
 const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { position, camera, viewPortSize } = usePlayerMovement({ width, height });
-  const { players, chatHistory, sendChatMessage, peerStreams } = useSocket({ mapUID, username, position });
+  const { players, chatHistory, sendChatMessage } = useSocket({ mapUID, username, position });
 
   useCanvasDrawing({
     canvasRef,
@@ -29,7 +28,7 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
     width,
     height
   });
-
+  // console.log(players)
   return (
     <div className="py-2 max-h-screen overflow-hidden flex flex-col items-center gap-4">
       <div className="relative">
@@ -39,26 +38,8 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
           height={viewPortSize.height}
           className="border-4 border-indigo-500 rounded shadow-lg bg-white"
         />
-        
-        {/* Render video overlays for each peer */}
-        {Object.entries(peerStreams).map(([peerId, stream]) => {
-          const player = players[peerId];
-          if (!player) return null;
-          
-          return (
-            <PlayerVideoOverlay
-              key={peerId}
-              stream={stream}
-              position={player.position}
-              camera={camera}
-              viewPortSize={viewPortSize}
-              username={player.username}
-            />
-          );
-        })}
       </div>
 
-      <VideoChat mapUID={mapUID.toString()} />
       <ChatOverlay onSendMessage={sendChatMessage} chatHistory={chatHistory} />
     </div>
   );

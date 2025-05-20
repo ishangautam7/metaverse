@@ -83,7 +83,6 @@ function drawPlayers(
   viewPortSize: ViewPortSize,
 ) {
   const avatarSize = 40;
-  const videoSize = 60;
   Object.entries(players).forEach(([id, player]) => {
     const isSelf = player.position.x === currentPosition.x && player.position.y === currentPosition.y;
     const drawX = player.position.x - camera.x;
