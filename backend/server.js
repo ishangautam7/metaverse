@@ -29,6 +29,7 @@ const io = socket(server, {
 })
 
 const players = {}
+const peerIds = {}
 
 io.on('connection', (socket) => {
     socket.on('join', ({ mapUID, user }) => {
@@ -43,6 +44,11 @@ io.on('connection', (socket) => {
         socket.join(mapUID)
         io.to(mapUID).emit('playersUpdate', players[mapUID])
     })
+
+    socket.on('join-video', ({ mapUID, peerId, username }) => {
+        peerIds[socket.id] = peerId;
+        socket.to(mapUID).emit('user-connected', { socketId: socket.id, peerId });
+    });
 
     socket.on('move', ({ mapUID, position }) => {
         if (players[mapUID]?.[socket.id]) {
@@ -82,43 +88,15 @@ io.on('connection', (socket) => {
         }
     });
 
-    // socket.on('webrtc-offer', ({to, offer})=>{
-    //     for (const id in players[mapUID]){
-    //         if(id !== socket.id){
-    //             io.to(id).emit('webrtc-offer', {from: socket.id, offer})
-    //         }
-    //     }
-    // })
-
-    // socket.on('webrtc-answer', ({ to, answer }) => {
-    //     io.to(to).emit('webrtc-answer', { from: socket.id, answer });
-    // });
-
-    // socket.on('webrtc-ice', ({ to, candidate }) => {
-    //     io.to(to).emit('webrtc-ice', { from: socket.id, candidate });
-    // });
-
-    // In your socket.io server code
-    socket.on('webrtc-offer', ({ mapUID, to, offer }) => {
-        io.to(to).emit('webrtc-offer', { from: socket.id, offer, mapUID });
-    });
-
-    socket.on('webrtc-answer', ({ mapUID, to, answer }) => {
-        io.to(to).emit('webrtc-answer', { from: socket.id, answer, mapUID });
-    });
-
-    socket.on('webrtc-ice', ({ mapUID, to, candidate }) => {
-        io.to(to).emit('webrtc-ice', { from: socket.id, candidate, mapUID });
-    });
-
     socket.on('disconnect', () => {
         for (const mapUID in players) {
             if (players[mapUID][socket.id]) {
                 delete players[mapUID][socket.id]
                 io.to(mapUID).emit('playersUpdate', players[mapUID])
-                io.to(mapUID).emit('playersLeft', socket.id)
+                io.to(mapUID).emit('user-disconnected', socket.id)
             }
         }
+        delete peerIds[socket.id];
     })
 })
 
