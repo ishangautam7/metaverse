@@ -11,6 +11,7 @@ interface VideoChatProps {
     onToggleMute: () => void;
     onToggleCamera: () => void;
     onToggleScreenShare: () => void;
+    handleExitRoom: () => void;
     remoteStreams: { [key:string]:{
         stream: MediaStream;
         username: string;
@@ -29,7 +30,8 @@ export const VideoChat = ({
     onToggleMute, 
     onToggleCamera, 
     onToggleScreenShare, 
-    remoteStreams 
+    remoteStreams,
+    handleExitRoom
 }: VideoChatProps) => {
     return (
         <>
@@ -47,6 +49,7 @@ export const VideoChat = ({
                 onToggleMute={onToggleMute}
                 onToggleCamera={onToggleCamera}
                 onToggleScreenShare={onToggleScreenShare}
+                handleExitRoom={handleExitRoom}
             />
         </>
     );

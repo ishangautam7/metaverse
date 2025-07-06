@@ -7,7 +7,7 @@ import { useCanvasDrawing } from "./useCanvasDrawing";
 import { VideoChat } from "../VideoChat/VideoChat";
 import toast from "react-hot-toast";
 import { PlayerVideoOverlay } from "./PlayerVideoOverlay";
-
+import { useRouter } from "next/navigation";
 interface AvatarCanvasProps {
   width: number;
   height: number;
@@ -128,6 +128,10 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
       setIsSharingScreen(true);
     }
   };
+  const router = useRouter()
+  const handleExitRoom: () => void = ()=> {
+    router.push(window.location.href.split('/map')[0])
+  }
 
   return (
     <div className="py-2 max-h-screen overflow-hidden flex flex-col items-center gap-4 relative">
@@ -165,6 +169,7 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
         }}
         onToggleScreenShare={handleToggleScreenShare}
         remoteStreams={remoteStreams}
+        handleExitRoom={handleExitRoom}
       />
 
       {/* Debug info */}
@@ -172,10 +177,6 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
         <div className="text-green-400 font-bold mb-2">🎮 Debug</div>
         <div>👥 Players: {Object.keys(players).length}</div>
         <div>📹 Remote Videos: {Object.keys(remoteStreams).length}</div>
-        <div>🎥 Local Stream: {localStream ? '✅' : '❌'}</div>
-        <div>🔊 Audio: {!isMuted ? '✅' : '❌'}</div>
-        <div>📹 Camera: {isCameraOn ? '✅' : '❌'}</div>
-        <div>🖥️ Screen: {isSharingScreen ? '✅' : '❌'}</div>
         {Object.entries(remoteStreams).map(([id, data]) => (
           <div key={id} className="text-yellow-300">
             📺 {data.username}: {data.stream.getTracks().length} tracks
