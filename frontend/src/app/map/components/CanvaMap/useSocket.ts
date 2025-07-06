@@ -47,7 +47,9 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
     }
 
     socket.on('connect', handleConnect);
-    return () => {socket.off('connect', handleConnect)};
+    return () => {
+      socket.off('connect', handleConnect);
+    };
   }, []);
 
   const createPeerConnection = (peerId: string): RTCPeerConnection => {
@@ -60,7 +62,6 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
       ]
     });
 
-    // Add local stream tracks if available
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => {
         if (localStreamRef.current) {
@@ -69,7 +70,6 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
       });
     }
 
-    // Handle incoming remote stream
     pc.ontrack = (event) => {
       if (event.streams && event.streams[0]) {
         setRemoteStreams((prev: RemoteStreams) => {
@@ -86,7 +86,6 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
       }
     };
 
-    // Handle ICE candidates
     pc.onicecandidate = (event) => {
       if (event.candidate) {
         socket.emit('webrtc-ice', {
@@ -96,7 +95,6 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
       }
     };
 
-    // Handle connection state changes
     pc.oniceconnectionstatechange = () => {
       if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
         setRemoteStreams((prev) => {
@@ -126,7 +124,6 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
       const currentSocketId = socketIdRef.current;
       if (!currentSocketId) return;
 
-      // Update positions in remote streams immediately
       setRemoteStreams(prev => {
         const updated = { ...prev };
         Object.keys(updated).forEach(id => {
@@ -141,12 +138,10 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
         return updated;
       });
 
-      // Create peer connections for new players (excluding self)
       Object.keys(serverPlayers).forEach((playerId) => {
         if (playerId !== currentSocketId && !peerConnectionsRef.current[playerId]) {
           const pc = createPeerConnection(playerId);
           
-          // If we have a local stream, create an offer after a short delay
           if (localStreamRef.current) {
             setTimeout(async () => {
               try {
@@ -160,14 +155,13 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
                   offer: pc.localDescription
                 });
               } catch (err) {
-                // Error creating offer
+                console.error(err)
               }
             }, 200);
           }
         }
       });
 
-      // Clean up connections for players who left
       Object.keys(peerConnectionsRef.current).forEach((playerId) => {
         if (!serverPlayers[playerId]) {
           peerConnectionsRef.current[playerId].close();
@@ -206,7 +200,7 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
       socket.off("playersUpdate", handlePlayersUpdate);
       socket.off("playersLeft", handlePlayersLeft);
     };
-  }, [mapUID, username]);
+  }, [mapUID, username, setRemoteStreams, createPeerConnection]);
 
   // WebRTC signaling handlers
   useEffect(() => {
@@ -226,7 +220,7 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
           answer: pc.localDescription
         });
       } catch (err) {
-        // Error handling offer
+        console.error(err)
       }
     };
 
@@ -236,7 +230,7 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
         try {
           await pc.setRemoteDescription(new RTCSessionDescription(answer));
         } catch (err) {
-          // Error handling answer
+          console.error(err)
         }
       }
     };
@@ -247,7 +241,7 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
         try {
           await pc.addIceCandidate(new RTCIceCandidate(candidate));
         } catch (err) {
-          // Error handling ICE candidate
+          console.error(err)
         }
       }
     };
@@ -261,28 +255,24 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
       socket.off("webrtc-answer", handleWebRTCAnswer);
       socket.off("webrtc-ice", handleWebRTCIce);
     };
-  }, []);
+  }, [createPeerConnection]);
 
   // Handle local stream changes
   useEffect(() => {
     if (!localStream) return;
 
-    // Update all existing peer connections with new stream
     Object.values(peerConnectionsRef.current).forEach(pc => {
-      // Remove old tracks
       pc.getSenders().forEach(sender => {
         if (sender.track) {
           pc.removeTrack(sender);
         }
       });
 
-      // Add new tracks
       localStream.getTracks().forEach(track => {
         pc.addTrack(track, localStream);
       });
     });
 
-    // Create new offers for existing stable connections
     Object.entries(peerConnectionsRef.current).forEach(([playerId, pc]) => {
       if (pc.signalingState === 'stable') {
         setTimeout(async () => {
@@ -297,18 +287,17 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
               offer: pc.localDescription
             });
           } catch (err) {
-            // Error creating renegotiation offer
+            console.error(err)
           }
         }, 100);
       }
     });
   }, [localStream]);
 
-  // Handle position updates - this is key for moving videos with avatars
+  // Handle position updates
   useEffect(() => {
     socket.emit("move", { mapUID, position });
     
-    // Update positions in remote streams when players move
     setRemoteStreams(prev => {
       const updated = { ...prev };
       Object.keys(updated).forEach(id => {
@@ -321,7 +310,7 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
       });
       return updated;
     });
-  }, [position, mapUID]);
+  }, [position, mapUID, setRemoteStreams]);
 
   // Cleanup on unmount
   useEffect(() => {

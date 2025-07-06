@@ -1,9 +1,11 @@
-export const host =
-  process.env.MODE === "prod"
-    ? "https://metaverse-lrym.onrender.com/"
-    : typeof window !== "undefined" && window.location.hostname.startsWith("192.168.")
-      ? "http://192.168.1.15:4000"
-      : "http://localhost:4000";
+// export const host =
+//   process.env.MODE === "prod"
+//     ? "https://metaverse-lrym.onrender.com/"
+//     : typeof window !== "undefined" && window.location.hostname.startsWith("192.168.")
+//       ? "http://192.168.1.15:4000"
+//       : "http://localhost:4000";
+
+export const host = "https://metaverse-lrym.onrender.com/"
 
 export const loginRoute = `${host}/api/auth/user/login`
 export const registerRoute = `${host}/api/auth/user/register`
