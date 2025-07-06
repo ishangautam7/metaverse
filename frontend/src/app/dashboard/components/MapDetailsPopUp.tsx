@@ -95,9 +95,6 @@ const MapDetailsPopup: React.FC<MapDetailsPopupProps> = ({ onClose, mapId }) => 
                     </button>
 
                     <div className="text-center mb-8">
-                        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 backdrop-blur-sm border border-white/10 rounded-full px-4 py-2 text-sm text-white/80 mb-4">
-                            <span>🗺️ Map Details</span>
-                        </div>
                         <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
                             {mapData.name}
                         </h2>

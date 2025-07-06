@@ -46,7 +46,7 @@ export const Header = () => {
             {!isClosed && (
                 <div className='bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 flex justify-center items-center py-3 gap-3 text-sm relative w-full'>
                     <div className="absolute inset-0 bg-black/20"></div>
-                    <p className='text-white/90 hidden md:block relative z-10'>🚀 Experience the future of virtual collaboration</p>
+                    <p className='text-white/90 hidden md:block relative z-10'>Experience the future of virtual collaboration</p>
                     <div className='inline-flex gap-1 items-center relative z-10 bg-white/10 px-3 py-1 rounded-full backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all cursor-pointer'>
                         <p className="text-white font-medium">Try for Free</p>
                         <ArrowRight className='h-4 w-4 text-white' />

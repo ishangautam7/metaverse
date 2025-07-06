@@ -1,6 +1,11 @@
 "use client"
+import { useRouter } from "next/navigation"
 
 export const About = () => {
+    const router = useRouter()
+    const handleEarlyAccess = () => {
+        router.push('/register')
+    }
     return (
         <section id="about" className="py-24 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">
             {/* Background Elements */}
@@ -106,7 +111,7 @@ export const About = () => {
                                     <div className="text-6xl mb-4">🌟</div>
                                     <h3 className="text-xl font-bold text-white mb-2">Join the Revolution</h3>
                                     <p className="text-gray-400 mb-6">Be part of the future of virtual collaboration</p>
-                                    <button className="px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-medium rounded-full hover:from-purple-700 hover:to-cyan-600 transition-all">
+                                    <button onClick={handleEarlyAccess} className="px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-medium rounded-full hover:from-purple-700 hover:to-cyan-600 transition-all">
                                         Get Early Access
                                     </button>
                                 </div>

@@ -8,12 +8,13 @@ export const Loading = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setAnimationDone(true);
-    }, 3000); 
+    }, 3000);
+
     return () => clearTimeout(timer);
   }, []);
 
   if (animationDone) {
-    return null; 
+    return null;
   }
 
   return (
@@ -25,37 +26,19 @@ export const Loading = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:50px_50px] opacity-5"></div>
       </div>
 
-      {/* Floating Particles */}
-      <div className="absolute inset-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-white/20 rounded-full animate-pulse"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${2 + Math.random() * 3}s`
-            }}
-          />
-        ))}
-      </div>
-
+      {/* Loading content */}
       <div className="text-center animate-fade-in relative z-10 flex flex-col items-center">
-        {/* Enhanced Spinner - Now properly centered */}
         <div className="relative mb-8 flex items-center justify-center">
           <div className="w-20 h-20 border-4 border-white/20 rounded-full"></div>
           <div className="absolute inset-0 w-20 h-20 border-4 border-t-purple-500 border-r-cyan-500 border-b-transparent border-l-transparent rounded-full animate-spin"></div>
           <div className="absolute inset-2 w-16 h-16 border-2 border-white/10 rounded-full"></div>
         </div>
 
-        {/* Loading Text */}
         <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-4">
           Loading
         </h2>
         <p className="text-gray-400 animate-pulse">Preparing your virtual experience...</p>
 
-        {/* Progress Dots */}
         <div className="flex justify-center gap-2 mt-6">
           {[...Array(3)].map((_, i) => (
             <div
@@ -85,4 +68,4 @@ export const Loading = () => {
       `}</style>
     </div>
   );
-}
+};

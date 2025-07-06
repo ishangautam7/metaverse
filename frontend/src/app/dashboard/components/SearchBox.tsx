@@ -1,4 +1,5 @@
 import axios from "axios"
+import { useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { findMapByUIdRoute } from "@/utils/Routes"
 import toast from "react-hot-toast"
@@ -15,16 +16,23 @@ export const SearchBox = ({roomId, setRoomId, setFoundMap}:SearchProps) => {
     const router = useRouter()
     const params = useSearchParams()
     
+
+    useEffect(()=>{
+        if(roomId>0){
+            router.push(`?ruid=${roomId}`)
+        }
+    }, [roomId])
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         if (/^\d*$/.test(value)) {
             setRoomId(value === '' ? 0 : parseInt(value, 10));
         }
+        router.push(`?ruid=${roomId}`)
     }
     
     const handleJoin = async () =>{
         if(roomId>0){
-            router.push(`?ruid=${roomId}`);
             const ruid  = params.get('ruid')
             const response = await axios.get(`${findMapByUIdRoute}/${ruid}`)
             if(response.status === 250){

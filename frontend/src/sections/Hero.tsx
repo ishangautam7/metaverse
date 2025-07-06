@@ -97,21 +97,7 @@ export const Hero = () => {
                         </button>
                     </div>
 
-                    {/* Stats */}
-                    <div className="flex flex-wrap justify-center lg:justify-start gap-8 pt-8">
-                        <div className="text-center">
-                            <div className="text-3xl font-bold text-white">10K+</div>
-                            <div className="text-sm text-gray-400">Active Users</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-3xl font-bold text-white">50K+</div>
-                            <div className="text-sm text-gray-400">Rooms Created</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-3xl font-bold text-white">99.9%</div>
-                            <div className="text-sm text-gray-400">Uptime</div>
-                        </div>
-                    </div>
+
                 </div>
 
                 {/* Right Content - Hero Image */}

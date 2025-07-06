@@ -153,7 +153,7 @@ export default function Dashboard() {
             >
               <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <span className="relative z-10 flex items-center justify-center gap-2">
-                ✨ Create New Map
+                Create New Map
               </span>
             </button>
           </div>

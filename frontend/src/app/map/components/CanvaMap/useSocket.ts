@@ -47,7 +47,7 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
     }
 
     socket.on('connect', handleConnect);
-    return () => socket.off('connect', handleConnect);
+    return () => {socket.off('connect', handleConnect)};
   }, []);
 
   const createPeerConnection = (peerId: string): RTCPeerConnection => {
