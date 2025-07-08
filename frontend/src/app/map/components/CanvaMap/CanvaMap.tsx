@@ -8,6 +8,7 @@ import { VideoChat } from "../VideoChat/VideoChat";
 import toast from "react-hot-toast";
 import { PlayerVideoOverlay } from "./PlayerVideoOverlay";
 import { useRouter } from "next/navigation";
+import { ChatOverlay } from "./ChatOverlay";
 interface AvatarCanvasProps {
   width: number;
   height: number;
@@ -30,13 +31,15 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
       y: number;
     }
   }}>({});
+  const [chatHistory, setChatHistory] = useState<Array<{ username: string; message: string; timestamp: string }>>([]);
 
   const { players } = useSocket({
     mapUID,
     username,
     position,
     localStream,
-    setRemoteStreams
+    setRemoteStreams,
+    setChatHistory
   });
 
   useCanvasDrawing({
@@ -133,6 +136,10 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
     router.push(window.location.href.split('/map')[0])
   }
 
+  const handleSendMessage = (message: string) => {
+    const { socket } = require('../../lib/socket');
+    socket.emit('chat', { mapUID, message });
+  };
   return (
     <div className="py-2 max-h-screen overflow-hidden flex flex-col items-center gap-4 relative">
       <canvas
@@ -154,6 +161,11 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
         />
       ))}
 
+      {/* Chat Overlay */}
+      <ChatOverlay
+        onSendMessage={handleSendMessage}
+        chatHistory={chatHistory}
+      />
       {/* Video chat controls and local video */}
       <VideoChat
         localStream={localStream}
@@ -177,6 +189,7 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
         <div className="text-green-400 font-bold mb-2">🎮 Debug</div>
         <div>👥 Players: {Object.keys(players).length}</div>
         <div>📹 Remote Videos: {Object.keys(remoteStreams).length}</div>
+        <div>💬 Chat Messages: {chatHistory.length}</div>
         {Object.entries(remoteStreams).map(([id, data]) => (
           <div key={id} className="text-yellow-300">
             📺 {data.username}: {data.stream.getTracks().length} tracks

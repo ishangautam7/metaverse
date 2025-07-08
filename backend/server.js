@@ -7,6 +7,8 @@ const http = require('http')
 const app = express()
 require('dotenv').config()
 
+app.disable('x-powered-by')
+
 app.use(cors({
     origin: '*',
     methods: ["GET", "POST"]

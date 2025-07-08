@@ -16,6 +16,7 @@ interface UseSocketProps {
   position: { x: number; y: number };
   localStream: MediaStream | null;
   setRemoteStreams: React.Dispatch<React.SetStateAction<RemoteStreams>>;
+  setChatHistory: React.Dispatch<React.SetStateAction<Array<{ username: string; message: string; timestamp: string }>>>;
 }
 
 export const useSocket = ({ mapUID, username, position, localStream, setRemoteStreams }: UseSocketProps) => {
@@ -195,12 +196,20 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
     socket.on("playersUpdate", handlePlayersUpdate);
     socket.on("playersLeft", handlePlayersLeft);
 
+    // Chat message handler
+    const handleChatMessage = ({ username: senderUsername, message }: { username: string; message: string }) => {
+      const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setChatHistory(prev => [...prev, { username: senderUsername, message, timestamp }]);
+    };
+
+    socket.on("chatMsg", handleChatMessage);
     return () => {
       socket.off('connect', handleConnect);
       socket.off("playersUpdate", handlePlayersUpdate);
       socket.off("playersLeft", handlePlayersLeft);
+      socket.off("chatMsg", handleChatMessage);
     };
-  }, [mapUID, username, setRemoteStreams, createPeerConnection]);
+  }, [mapUID, username, setRemoteStreams, setChatHistory, createPeerConnection]);
 
   // WebRTC signaling handlers
   useEffect(() => {
