@@ -31,15 +31,13 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
       y: number;
     }
   }}>({});
-  const [chatHistory, setChatHistory] = useState<Array<{ username: string; message: string; timestamp: string }>>([]);
 
-  const { players } = useSocket({
+  const { players, chatHistory, sendChatMessage } = useSocket({
     mapUID,
     username,
     position,
     localStream,
-    setRemoteStreams,
-    setChatHistory
+    setRemoteStreams
   });
 
   useCanvasDrawing({
@@ -136,10 +134,6 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
     router.push(window.location.href.split('/map')[0])
   }
 
-  const handleSendMessage = (message: string) => {
-    const { socket } = require('../../lib/socket');
-    socket.emit('chat', { mapUID, message });
-  };
   return (
     <div className="py-2 max-h-screen overflow-hidden flex flex-col items-center gap-4 relative">
       <canvas
@@ -163,7 +157,7 @@ const CanvaMap = ({ username, mapUID, width = 1800, height = 1000 }: AvatarCanva
 
       {/* Chat Overlay */}
       <ChatOverlay
-        onSendMessage={handleSendMessage}
+        onSendMessage={sendChatMessage}
         chatHistory={chatHistory}
       />
       {/* Video chat controls and local video */}

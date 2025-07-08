@@ -16,11 +16,11 @@ interface UseSocketProps {
   position: { x: number; y: number };
   localStream: MediaStream | null;
   setRemoteStreams: React.Dispatch<React.SetStateAction<RemoteStreams>>;
-  setChatHistory: React.Dispatch<React.SetStateAction<Array<{ username: string; message: string; timestamp: string }>>>;
 }
 
 export const useSocket = ({ mapUID, username, position, localStream, setRemoteStreams }: UseSocketProps) => {
   const [players, setPlayers] = useState<PlayersMap>({});
+  const [chatHistory, setChatHistory] = useState<Array<{ username: string; message: string; timestamp: string }>>([]);
   const peerConnectionsRef = useRef<{ [id: string]: RTCPeerConnection }>({});
   const localStreamRef = useRef<MediaStream | null>(null);
   const hasJoinedRef = useRef(false);
@@ -209,7 +209,7 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
       socket.off("playersLeft", handlePlayersLeft);
       socket.off("chatMsg", handleChatMessage);
     };
-  }, [mapUID, username, setRemoteStreams, setChatHistory, createPeerConnection]);
+  }, [mapUID, username, setRemoteStreams, createPeerConnection]);
 
   // WebRTC signaling handlers
   useEffect(() => {
@@ -334,5 +334,9 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
     };
   }, []);
 
-  return { players };
+  const sendChatMessage = (message: string) => {
+    socket.emit("chat", { mapUID, message });
+  };
+
+  return { players, chatHistory, sendChatMessage };
 };
