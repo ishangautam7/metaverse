@@ -32,7 +32,7 @@ export const LocalVideo = ({ stream, isMuted, isCameraOn, isSharingScreen }: Loc
 
     if (!stream || (!isCameraOn && !isSharingScreen)) {
         return (
-            <div className="fixed bottom-20 left-5 w-48 h-36 bg-gray-800 rounded-lg border-2 border-green-500 shadow-md flex items-center justify-center z-50">
+            <div className="fixed bottom-20 right-5 w-48 h-36 bg-gray-800 rounded-lg border-2 border-green-500 shadow-md flex items-center justify-center z-50">
                 <div className="text-white text-center">
                     <div className="text-2xl mb-2">📹</div>
                     <div className="text-sm">Camera Off</div>
@@ -42,7 +42,7 @@ export const LocalVideo = ({ stream, isMuted, isCameraOn, isSharingScreen }: Loc
     }
 
     return (
-        <div className="fixed bottom-20 left-5 w-48 h-36 z-50">
+        <div className="fixed bottom-20 right-5 w-48 h-36 z-50">
             <video 
                 ref={videoRef} 
                 autoPlay 
