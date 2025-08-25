@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  basePath: '/metaverse',
+  assetPrefix: '/metaverse/',
+  trailingSlash: true,
+  output: 'export', // Optional: Use for static export; remove if using SSR/SSG
   webpack(config) {
     const fileLoaderRule = config.module.rules.find((rule) =>
       rule.test?.test?.('.svg')
@@ -24,8 +28,6 @@ const nextConfig = {
 
     return config;
   },
-
-  // ...other config
 };
 
 module.exports = nextConfig;
