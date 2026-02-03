@@ -5,6 +5,11 @@ const nextConfig = {
   assetPrefix: '/metaverse/',
   trailingSlash: true,
   // Removed 'output: export' to allow dynamic routes that depend on runtime data
+  turbopack: {
+    resolveAlias: {
+      '@': './src',
+    },
+  },
   webpack(config) {
     const fileLoaderRule = config.module.rules.find((rule) =>
       rule.test?.test?.('.svg')
