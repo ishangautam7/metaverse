@@ -9,6 +9,10 @@ import { checkmaproute } from "@/utils/Routes"
 import { useRouter } from "next/navigation"
 import { Loading } from "@/components/Loading"
 
+export async function generateStaticParams() {
+    return []
+}
+
 const CanvaRoomPage = () => {
     const router = useRouter()
     const params = useParams()
