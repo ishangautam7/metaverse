@@ -1,10 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  basePath: '/metaverse',
-  assetPrefix: '/metaverse/',
   trailingSlash: true,
   // Removed 'output: export' to allow dynamic routes that depend on runtime data
+  // Removed basePath and assetPrefix for Vercel deployment
   turbopack: {
     resolveAlias: {
       '@': './src',
