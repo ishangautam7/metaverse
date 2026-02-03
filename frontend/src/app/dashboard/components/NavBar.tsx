@@ -45,7 +45,14 @@ const NavBar = ({dropdownOpen, setDropdownOpen}: NavbarProps) => {
                     </div>
                     <div className="hidden sm:block">
                         <div className="text-white text-sm font-medium">
-                            {JSON.parse(localStorage.getItem("user") || "{}").username || "User"}
+                            {(() => {
+                                try {
+                                    const user = JSON.parse(localStorage.getItem("user") || "{}");
+                                    return typeof user === 'object' && user?.username && typeof user.username === 'string' ? user.username : "User";
+                                } catch {
+                                    return "User";
+                                }
+                            })()}
                         </div>
                         <div className="text-gray-400 text-xs">Dashboard</div>
                     </div>

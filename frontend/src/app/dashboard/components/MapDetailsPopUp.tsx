@@ -5,22 +5,22 @@ import { useRouter } from "next/navigation"
 
 // Interfaces for Map Data and Response
 interface Owner {
-  username: string;
+    username: string;
 }
 
 interface MapData {
-  _id: string;
-  name: string;
-  mapUID: string;
-  owner: Owner;
-  width: number;
-  height: number;
-  image?: string;
+    _id: string;
+    name: string;
+    mapUID: string;
+    owner: Owner;
+    width: number;
+    height: number;
+    image?: string;
 }
 
 interface MapDetailsPopupProps {
-  mapId: string
-  onClose: () => void
+    mapId: string
+    onClose: () => void
 }
 
 const MapDetailsPopup: React.FC<MapDetailsPopupProps> = ({ onClose, mapId }) => {
@@ -29,14 +29,14 @@ const MapDetailsPopup: React.FC<MapDetailsPopupProps> = ({ onClose, mapId }) => 
     const [loading, setLoading] = useState(true)
 
     const router = useRouter()
-    
+
     // Fetch map details when the component is mounted or mapId changes
     useEffect(() => {
         const fetchSingleMapData = async () => {
             try {
                 const response = await axios.post(getsinglemapdetailsroute, { mapId })
                 if (response.status === 200) {
-                    setMapData(response.data.map) 
+                    setMapData(response.data.map)
                     setOwner(response.data.owner)
                 }
             } catch (err) {
@@ -85,7 +85,7 @@ const MapDetailsPopup: React.FC<MapDetailsPopupProps> = ({ onClose, mapId }) => 
             <div className="relative bg-black/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-white/20 w-[90%] max-w-lg text-white animate-fadeIn">
                 {/* Glow Effect */}
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-2xl blur opacity-30"></div>
-                
+
                 <div className="relative z-10">
                     <button
                         onClick={onClose}
@@ -116,7 +116,9 @@ const MapDetailsPopup: React.FC<MapDetailsPopupProps> = ({ onClose, mapId }) => 
                                     <span className="text-2xl">👤</span>
                                     <span className="text-gray-400 text-sm">Created by</span>
                                 </div>
-                                <div className="text-white font-medium">{owner}</div>
+                                <div className="text-white font-medium">
+                                    {typeof owner === 'string' ? owner : (owner as any)?.username || "Unknown"}
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
@@ -147,8 +149,8 @@ const MapDetailsPopup: React.FC<MapDetailsPopupProps> = ({ onClose, mapId }) => 
                                 Cancel
                             </button>
 
-                            <button 
-                                className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-medium rounded-xl hover:from-purple-700 hover:to-cyan-600 transition-all shadow-lg hover:shadow-purple-500/25" 
+                            <button
+                                className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-medium rounded-xl hover:from-purple-700 hover:to-cyan-600 transition-all shadow-lg hover:shadow-purple-500/25"
                                 onClick={handleEnterClick}
                             >
                                 <span className="flex items-center justify-center gap-2">

@@ -1,13 +1,12 @@
 "use client"
 
-import Cross from "@/assests/cross.svg"
+import { Cross, GoogleLogo } from "@/components/Icons"
 import { useEffect, useRef, useState } from "react"
-import GoogleLogo from "@/assests/google-logo.svg"
 import toast from "react-hot-toast"
 import axios from "axios"
 import { loginRoute } from "@/utils/Routes"
 import Link from "next/link"
-import {useRouter} from "next/navigation"
+import { useRouter } from "next/navigation"
 
 interface LoginProps {
     onClose: () => void
@@ -65,9 +64,9 @@ export const Login = ({ onClose }: LoginProps) => {
         } catch (e: unknown) {
             if (axios.isAxiosError(e) && e.response?.data && typeof e.response.data.msg === "string") {
                 toast.error(e.response.data.msg)
-              } else {
+            } else {
                 toast.error("An unexpected error occurred")
-              }
+            }
         }
     }
 
@@ -95,7 +94,7 @@ export const Login = ({ onClose }: LoginProps) => {
             <div className="relative w-[90%] max-w-md" ref={loginRef}>
                 {/* Glow Effect */}
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-2xl blur opacity-30"></div>
-                
+
                 <div className="relative bg-black/80 backdrop-blur-xl text-white p-8 rounded-2xl shadow-2xl border border-white/20 animate-fadeIn">
                     <button
                         onClick={onClose}
@@ -116,12 +115,12 @@ export const Login = ({ onClose }: LoginProps) => {
                             <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                                 <span></span> Email
                             </label>
-                            <input 
-                                type="email" 
-                                name="email" 
-                                placeholder="Enter your email" 
-                                className="w-full bg-white/5 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 placeholder-gray-500 text-white outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all" 
-                                onChange={handleChange} 
+                            <input
+                                type="email"
+                                name="email"
+                                placeholder="Enter your email"
+                                className="w-full bg-white/5 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 placeholder-gray-500 text-white outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
+                                onChange={handleChange}
                             />
                         </div>
 
@@ -129,17 +128,17 @@ export const Login = ({ onClose }: LoginProps) => {
                             <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                                 <span></span> Password
                             </label>
-                            <input 
-                                type="password" 
-                                name="password" 
-                                placeholder="Enter your password" 
-                                className="w-full bg-white/5 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 placeholder-gray-500 text-white outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all" 
-                                onChange={handleChange} 
+                            <input
+                                type="password"
+                                name="password"
+                                placeholder="Enter your password"
+                                className="w-full bg-white/5 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 placeholder-gray-500 text-white outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
+                                onChange={handleChange}
                             />
                         </div>
 
-                        <button 
-                            type="submit" 
+                        <button
+                            type="submit"
                             className="group w-full bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-semibold py-4 rounded-xl hover:from-purple-700 hover:to-cyan-600 transition-all duration-300 shadow-lg hover:shadow-purple-500/25 relative overflow-hidden"
                         >
                             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -153,8 +152,8 @@ export const Login = ({ onClose }: LoginProps) => {
                         <div className="flex-1 border-t border-white/20"></div>
                     </div>
 
-                    <button 
-                        onClick={() => toast("Google Auth coming soon!")} 
+                    <button
+                        onClick={() => toast("Google Auth coming soon!")}
                         className="group w-full py-3 border border-white/30 rounded-xl hover:bg-white/10 hover:border-white/40 transition-all backdrop-blur-sm"
                     >
                         <div className="flex justify-center items-center gap-3">

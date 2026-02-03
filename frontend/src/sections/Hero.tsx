@@ -43,7 +43,7 @@ export const Hero = () => {
             </div>
 
             {/* Interactive Cursor Effect */}
-            <div 
+            <div
                 className="absolute w-96 h-96 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-full blur-3xl pointer-events-none transition-all duration-300"
                 style={{
                     left: mousePosition.x - 192,
@@ -52,15 +52,10 @@ export const Hero = () => {
             />
 
             <div className="relative z-10 max-w-7xl w-full flex flex-col lg:flex-row items-center justify-between gap-12 px-4 sm:px-6 lg:px-8 py-20">
-                
+
                 {/* Left Content */}
                 <div className="flex-1 text-center lg:text-left space-y-8">
                     <div className="space-y-6">
-                        <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-4 py-2 text-sm text-white/80">
-                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                            <span>Now Live - Join the Beta</span>
-                        </div>
-                        
                         <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight">
                             <span className="block bg-gradient-to-r from-white via-purple-200 to-cyan-200 bg-clip-text text-transparent">
                                 Welcome to
@@ -69,24 +64,24 @@ export const Hero = () => {
                                 NexRoom
                             </span>
                         </h1>
-                        
+
                         <p className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                            Step into the future of virtual collaboration. Create, connect, and collaborate in your own 
-                            <span className="text-purple-400 font-semibold"> 2D metaverse</span> - 
+                            Step into the future of virtual collaboration. Create, connect, and collaborate in your own
+                            <span className="text-purple-400 font-semibold"> 2D metaverse</span> -
                             where distance disappears and creativity flourishes.
                         </p>
                     </div>
 
                     {/* CTA Buttons */}
                     <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                        <button 
-                            onClick={() => router.push('/register')} 
+                        <button
+                            onClick={() => router.push('/register')}
                             className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-semibold rounded-full hover:from-purple-700 hover:to-cyan-600 transition-all duration-300 shadow-lg hover:shadow-purple-500/25 transform hover:scale-105"
                         >
                             <span className="relative z-10">Start Your Journey</span>
                             <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-cyan-500 rounded-full blur opacity-75 group-hover:opacity-100 transition-opacity"></div>
                         </button>
-                        
+
                         <button className="group px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-full hover:bg-white/10 hover:border-white/50 transition-all duration-300 backdrop-blur-sm">
                             <span className="flex items-center gap-2">
                                 Watch Demo
@@ -105,7 +100,7 @@ export const Hero = () => {
                     <div className="relative group">
                         {/* Glowing Border Effect */}
                         <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-cyan-500 to-purple-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
-                        
+
                         {/* Main Image Container */}
                         <div className="relative w-80 h-80 sm:w-96 sm:h-96 lg:w-[500px] lg:h-[500px] bg-gradient-to-br from-gray-900 to-black rounded-2xl overflow-hidden border border-white/10">
                             <Image
@@ -116,12 +111,12 @@ export const Hero = () => {
                                 height={500}
                                 priority
                             />
-                            
+
                             {/* Overlay with Play Button */}
                             <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                 <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
                                     <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M8 5v14l11-7z"/>
+                                        <path d="M8 5v14l11-7z" />
                                     </svg>
                                 </div>
                             </div>
