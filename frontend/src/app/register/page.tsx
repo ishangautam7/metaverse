@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import axios from "axios"
-import GoogleLogo from "@/assests/google-logo.svg"
+import Image from "next/image"
 import Link from "next/link"
 import { registerRoute } from "@/utils/Routes"
 
@@ -152,7 +152,13 @@ const RegisterPage = () => {
             className="group w-full py-3 border border-white/30 rounded-xl hover:bg-white/10 hover:border-white/40 transition-all backdrop-blur-sm"
           >
             <div className="flex justify-center items-center gap-3">
-              <GoogleLogo className="h-5 w-5" />
+              <Image 
+                src="/metaverse/assests/google-logo.svg" 
+                alt="Google" 
+                width={20} 
+                height={20}
+                className="h-5 w-5"
+              />
               <span className="text-white font-medium">Continue with Google</span>
             </div>
           </button>
