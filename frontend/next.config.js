@@ -1,6 +1,4 @@
 /** @type {import('next').NextConfig} */
-const path = require('path');
-
 const nextConfig = {
   reactStrictMode: true,
   basePath: '/metaverse',
@@ -8,7 +6,6 @@ const nextConfig = {
   trailingSlash: true,
   // Removed 'output: export' to allow dynamic routes that depend on runtime data
   turbopack: {
-    root: path.resolve(__dirname),
     resolveAlias: {
       '@': './src',
     },
