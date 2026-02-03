@@ -35,7 +35,7 @@ const CanvaRoomClient = () => {
         }
     }, [mapExists, router]);
 
-    if (mapExists === null) {
+    if (mapExists === null || mapUID === null) {
         return <Loading />;
     }
     const user = JSON.parse(localStorage.getItem("user") ?? "{}")
