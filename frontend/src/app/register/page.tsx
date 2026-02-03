@@ -153,7 +153,7 @@ const RegisterPage = () => {
           >
             <div className="flex justify-center items-center gap-3">
               <Image 
-                src="/metaverse/assests/google-logo.svg" 
+                src="/assests/google-logo.svg" 
                 alt="Google" 
                 width={20} 
                 height={20}
