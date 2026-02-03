@@ -13,10 +13,12 @@ const CanvaRoomClient = () => {
     const router = useRouter()
     const params = useParams()
     const [mapExists, setMapExists] = useState<boolean | null>(null)
-    const mapUIDstr = params.mapUID as string
-    const mapUID = Number(mapUIDstr)
+    const mapUIDstr = params?.mapUID as string | undefined
+    const mapUID = mapUIDstr ? Number(mapUIDstr) : null
 
     useEffect(() => {
+        if (!mapUID) return;
+        
         const checkMapExistence = async () => {
             const response = await axios.post(checkmaproute, { mapUID })
             if (response.status === 200) {
@@ -25,7 +27,7 @@ const CanvaRoomClient = () => {
         }
 
         checkMapExistence()
-    }, [mapExists])
+    }, [mapUID])
 
     useEffect(() => {
         if (mapExists === false) {
