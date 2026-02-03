@@ -18,7 +18,7 @@ export const LocalVideo = ({ stream, isMuted, isCameraOn, isSharingScreen }: Loc
 
         if (stream && (isCameraOn || isSharingScreen)) {
             video.srcObject = stream;
-            video.muted = true; // Always mute local video to prevent feedback
+            video.muted = true; // Muted local video to avoid echo
         } else {
             video.srcObject = null;
         }

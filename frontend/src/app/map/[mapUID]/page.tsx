@@ -1,11 +1,7 @@
-import CanvaRoomClient from "./CanvaRoomClient"
+import dynamic from "next/dynamic"
 
-export async function generateStaticParams() {
-    return []
-}
+const CanvaRoomClient = dynamic(() => import("./CanvaRoomClient"))
 
-const CanvaRoomPage = () => {
+export default function CanvaRoomPage() {
     return <CanvaRoomClient />
 }
-
-export default CanvaRoomPage

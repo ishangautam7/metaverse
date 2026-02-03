@@ -4,7 +4,7 @@ const nextConfig = {
   basePath: '/metaverse',
   assetPrefix: '/metaverse/',
   trailingSlash: true,
-  output: 'export', // Optional: Use for static export; remove if using SSR/SSG
+  // Removed 'output: export' to allow dynamic routes that depend on runtime data
   webpack(config) {
     const fileLoaderRule = config.module.rules.find((rule) =>
       rule.test?.test?.('.svg')
