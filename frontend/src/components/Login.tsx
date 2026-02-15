@@ -1,6 +1,5 @@
 "use client"
 
-import { Cross, GoogleLogo } from "@/components/Icons"
 import { useEffect, useRef, useState } from "react"
 import toast from "react-hot-toast"
 import axios from "axios"
@@ -84,102 +83,62 @@ export const Login = ({ onClose }: LoginProps) => {
     }, [onClose])
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
-            {/* Background Effects Removed */}
-
-            <div className="relative w-[90%] max-w-md" ref={loginRef}>
-                {/* Glow Effect Removed */}
-
-                <div className="relative bg-gray-900 border border-white/10 text-white p-8 rounded-2xl shadow-2xl animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div className="relative w-[90%] max-w-sm" ref={loginRef}>
+                <div className="bg-neutral-900 border border-neutral-800 text-white p-6 rounded-lg">
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 text-xl font-bold text-gray-300 hover:text-white hover:bg-white/10 w-8 h-8 rounded-full flex items-center justify-center transition-all"
+                        className="absolute top-4 right-4 text-neutral-500 hover:text-white w-6 h-6 flex items-center justify-center transition-colors"
                     >
                         ×
                     </button>
 
-                    <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold text-white mb-2">
-                            Sign In
+                    <div className="mb-6">
+                        <h2 className="text-xl font-semibold text-white mb-1">
+                            Sign in
                         </h2>
-                        <p className="text-gray-400">Continue your virtual journey</p>
+                        <p className="text-neutral-500 text-sm">Enter your credentials to continue</p>
                     </div>
 
-                    <form className="space-y-6" onSubmit={(event) => handleSubmit(event)}>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                                <span></span> Email
-                            </label>
+                    <form className="space-y-4" onSubmit={(event) => handleSubmit(event)}>
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-neutral-400">Email</label>
                             <input
                                 type="email"
                                 name="email"
-                                placeholder="Enter your email"
-                                className="w-full bg-white/5 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 placeholder-gray-500 text-white outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
+                                placeholder="you@example.com"
+                                className="w-full bg-neutral-950 border border-neutral-800 rounded-md px-3 py-2.5 text-sm placeholder-neutral-600 text-white outline-none focus:border-neutral-600 transition-colors"
                                 onChange={handleChange}
                             />
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                                <span></span> Password
-                            </label>
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-neutral-400">Password</label>
                             <input
                                 type="password"
                                 name="password"
-                                placeholder="Enter your password"
-                                className="w-full bg-white/5 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 placeholder-gray-500 text-white outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
+                                placeholder="••••••••"
+                                className="w-full bg-neutral-950 border border-neutral-800 rounded-md px-3 py-2.5 text-sm placeholder-neutral-600 text-white outline-none focus:border-neutral-600 transition-colors"
                                 onChange={handleChange}
                             />
                         </div>
 
                         <button
                             type="submit"
-                            className="group w-full bg-purple-600 text-white font-semibold py-4 rounded-xl hover:bg-purple-700 transition-all duration-300 shadow-lg"
+                            className="w-full bg-white text-neutral-900 font-medium py-2.5 rounded-md hover:bg-neutral-200 transition-colors text-sm"
                         >
-                            <span className="relative z-10">Sign In</span>
+                            Sign in
                         </button>
                     </form>
 
-                    <div className="my-6 flex items-center">
-                        <div className="flex-1 border-t border-white/20"></div>
-                        <span className="px-4 text-gray-400 text-sm">or</span>
-                        <div className="flex-1 border-t border-white/20"></div>
-                    </div>
-
-                    <button
-                        onClick={() => toast("Google Auth coming soon!")}
-                        className="group w-full py-3 border border-white/30 rounded-xl hover:bg-white/10 hover:border-white/40 transition-all backdrop-blur-sm"
-                    >
-                        <div className="flex justify-center items-center gap-3">
-                            <GoogleLogo className="h-5 w-5" />
-                            <span className="text-white font-medium">Continue with Google</span>
-                        </div>
-                    </button>
-
-                    <p className="text-sm text-gray-400 text-center mt-6">
-                        Don't have an account?{" "}
-                        <Link href="/register" className="text-purple-400 hover:text-purple-300 underline transition-colors">
-                            Create one here
+                    <p className="text-xs text-neutral-500 text-center mt-5">
+                        Don&apos;t have an account?{" "}
+                        <Link href="/register" className="text-white hover:underline">
+                            Create one
                         </Link>
                     </p>
                 </div>
             </div>
-
-            <style jsx>{`
-                .animate-fadeIn {
-                    animation: fadeIn 0.3s ease-out;
-                }
-                @keyframes fadeIn {
-                    from {
-                        opacity: 0;
-                        transform: scale(0.95) translateY(20px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: scale(1) translateY(0);
-                    }
-                }
-            `}</style>
         </div>
     )
 }

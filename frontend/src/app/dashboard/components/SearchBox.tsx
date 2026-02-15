@@ -55,28 +55,25 @@ export const SearchBox = ({ roomId, setRoomId, setFoundMap }: SearchProps) => {
     }
 
     return (
-        <div className="space-y-4">
-            <div>
-                <label htmlFor="roomId" className="text-sm font-medium text-gray-300 flex items-center gap-2 mb-2">
-                    <Search className="w-4 h-4 text-purple-400" /> Find Virtual Space
-                </label>
-                <div className="flex gap-2">
-                    <input
-                        id="roomId"
-                        type="text"
-                        value={roomId || ''}
-                        onChange={handleInputChange}
-                        placeholder="Enter Map UID..."
-                        className="flex-1 bg-white/5 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
-                    />
-                    <button
-                        onClick={handleJoin}
-                        className="px-4 bg-gradient-to-r from-purple-600/80 to-cyan-600/80 hover:from-purple-600 hover:to-cyan-600 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-purple-500/25 flex items-center justify-center"
-                    >
-                        <Search className="w-5 h-5" />
-                    </button>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">Enter a 12-digit Map UID to join someone else's space</p>
+        <div className="space-y-1.5">
+            <label htmlFor="roomId" className="text-xs font-medium text-neutral-400">
+                Find a space
+            </label>
+            <div className="flex gap-2">
+                <input
+                    id="roomId"
+                    type="text"
+                    value={roomId || ''}
+                    onChange={handleInputChange}
+                    placeholder="Enter Map UID..."
+                    className="flex-1 bg-neutral-950 border border-neutral-800 rounded-md px-3 py-2 text-sm text-white placeholder-neutral-600 outline-none focus:border-neutral-600 transition-colors"
+                />
+                <button
+                    onClick={handleJoin}
+                    className="px-3 bg-neutral-800 text-neutral-400 hover:text-white rounded-md transition-colors"
+                >
+                    <Search className="w-4 h-4" />
+                </button>
             </div>
         </div>
     )

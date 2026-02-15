@@ -18,14 +18,14 @@ export const PlayerVideoOverlay = ({ stream, position, camera, viewPortSize, use
     if (!video || !stream) return;
 
     video.srcObject = stream;
-    
+
     const playPromise = video.play();
     if (playPromise !== undefined) {
       playPromise.catch(() => {
         // Video play failed - silently handle
       });
     }
-    
+
     return () => {
       if (video.srcObject) {
         video.srcObject = null;
@@ -35,10 +35,10 @@ export const PlayerVideoOverlay = ({ stream, position, camera, viewPortSize, use
 
   // Don't render if no stream or stream has no active tracks
   if (!stream) return null;
-  
+
   const hasActiveVideo = stream.getVideoTracks().some(track => track.enabled && track.readyState === 'live');
   const hasActiveAudio = stream.getAudioTracks().some(track => track.enabled && track.readyState === 'live');
-  
+
   // Hide component if no active video or audio tracks
   if (!hasActiveVideo && !hasActiveAudio) return null;
 
@@ -75,13 +75,11 @@ export const PlayerVideoOverlay = ({ stream, position, camera, viewPortSize, use
         <video
           ref={videoRef}
           autoPlay
-          muted
           playsInline
-          className={`w-full h-full rounded-lg shadow-lg bg-black object-cover ${
-            isScreenShare 
-              ? 'border-2 border-blue-400' 
+          className={`w-full h-full rounded-lg shadow-lg bg-black object-cover ${isScreenShare
+              ? 'border-2 border-blue-400'
               : 'border-2 border-purple-400'
-          }`}
+            }`}
         />
       ) : (
         // Show audio-only indicator when only audio is active
@@ -92,18 +90,17 @@ export const PlayerVideoOverlay = ({ stream, position, camera, viewPortSize, use
           </div>
         </div>
       )}
-      
+
       {/* Username label */}
-      <div className={`absolute -bottom-6 left-0 right-0 text-white text-center py-1 text-xs truncate rounded ${
-        isScreenShare 
-          ? 'bg-blue-600 bg-opacity-90' 
-          : hasVideo 
+      <div className={`absolute -bottom-6 left-0 right-0 text-white text-center py-1 text-xs truncate rounded ${isScreenShare
+          ? 'bg-blue-600 bg-opacity-90'
+          : hasVideo
             ? 'bg-purple-600 bg-opacity-90'
             : 'bg-green-600 bg-opacity-90'
-      }`}>
+        }`}>
         {username} {isScreenShare ? "(Screen)" : !hasVideo ? "(Audio)" : ""}
       </div>
-      
+
       {/* Screen share indicator */}
       {isScreenShare && (
         <div className="absolute -top-2 -right-2 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
@@ -112,9 +109,8 @@ export const PlayerVideoOverlay = ({ stream, position, camera, viewPortSize, use
       )}
 
       {/* Live indicator - different colors for different states */}
-      <div className={`absolute top-1 left-1 w-2 h-2 rounded-full opacity-75 animate-pulse ${
-        hasVideo ? 'bg-green-500' : 'bg-yellow-500'
-      }`}></div>
+      <div className={`absolute top-1 left-1 w-2 h-2 rounded-full opacity-75 animate-pulse ${hasVideo ? 'bg-green-500' : 'bg-yellow-500'
+        }`}></div>
     </div>
   );
 };

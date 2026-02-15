@@ -1,100 +1,60 @@
 "use client"
 
-import { useState } from "react"
+import { Video, Monitor, MessageSquare, Move, Paintbrush, Zap } from "lucide-react"
 
 const features = [
     {
-        icon: "",
-        title: "2D Metaverse",
-        description: "Navigate through beautifully designed 2D spaces with smooth, intuitive controls",
-        color: "from-purple-500 to-purple-700"
+        icon: Move,
+        title: "Spatial Movement",
+        description: "Navigate a 2D map and walk up to colleagues — proximity determines who you hear."
     },
     {
-        icon: "",
-        title: "Video Chat",
-        description: "Real-time video and audio communication with crystal clear quality",
-        color: "from-cyan-500 to-cyan-700"
+        icon: Video,
+        title: "Video & Audio",
+        description: "Crystal-clear calls that start automatically when you're near someone. No links needed."
     },
     {
-        icon: "",
+        icon: Monitor,
+        title: "Screen Sharing",
+        description: "Share your screen with nearby teammates instantly. Great for pair programming."
+    },
+    {
+        icon: MessageSquare,
+        title: "Live Chat",
+        description: "Send quick messages to anyone in the room without interrupting their flow."
+    },
+    {
+        icon: Paintbrush,
         title: "Custom Rooms",
-        description: "Design and build your own virtual spaces with our intuitive room builder",
-        color: "from-pink-500 to-pink-700"
+        description: "Design your own office layout. Add desks, meeting areas, and lounges."
     },
     {
-        icon: "",
-        title: "Real-time Collaboration",
-        description: "Work together seamlessly with live cursor tracking and instant updates",
-        color: "from-green-500 to-green-700"
-    },
-    {
-        icon: "",
-        title: "Secure & Private",
-        description: "End-to-end encryption ensures your conversations stay private",
-        color: "from-orange-500 to-orange-700"
-    },
-    {
-        icon: "",
-        title: "Lightning Fast",
-        description: "Optimized performance for smooth interactions across all devices",
-        color: "from-blue-500 to-blue-700"
+        icon: Zap,
+        title: "Low Latency",
+        description: "Optimized WebRTC connections keep everything fast across any device."
     }
 ]
 
 export const Features = () => {
-    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
-
     return (
-        <section id="features" className="py-24 bg-gray-950 relative overflow-hidden">
-            {/* Background Pattern Removed */}
-
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                {/* Section Header */}
-                <div className="text-center mb-20">
-                    <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-4 py-2 text-sm text-white/80 mb-6">
-                        <span>Features</span>
-                    </div>
-                    <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                        Everything You Need
+        <section id="features" className="py-24 bg-neutral-950 border-t border-neutral-900">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-16">
+                    <p className="text-sm text-neutral-500 uppercase tracking-wide mb-3">Features</p>
+                    <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
+                        Everything your team needs
                     </h2>
-                    <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-                        Powerful features designed to enhance your virtual collaboration experience
-                    </p>
                 </div>
 
-                {/* Features Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-neutral-800 rounded-xl overflow-hidden border border-neutral-800">
                     {features.map((feature, index) => (
                         <div
                             key={index}
-                            className="group relative"
-                            onMouseEnter={() => setHoveredIndex(index)}
-                            onMouseLeave={() => setHoveredIndex(null)}
+                            className="bg-neutral-950 p-8 hover:bg-neutral-900/50 transition-colors"
                         >
-                            {/* Glow Effect Removed */}
-
-                            {/* Card */}
-                            <div className="relative bg-gray-900 border border-white/10 rounded-2xl p-8 h-full hover:bg-gray-800 transition-all duration-300">
-                                {/* Icon */}
-                                <div className="text-4xl mb-4 transform group-hover:scale-110 transition-transform duration-300">
-                                    {feature.icon}
-                                </div>
-
-                                {/* Content */}
-                                <h3 className="text-xl font-bold text-white mb-3 transition-all duration-300">
-                                    {feature.title}
-                                </h3>
-                                <p className="text-gray-400 leading-relaxed group-hover:text-gray-300 transition-colors duration-300">
-                                    {feature.description}
-                                </p>
-
-                                {/* Hover Arrow */}
-                                <div className={`mt-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform ${hoveredIndex === index ? 'translate-x-0' : 'translate-x-2'}`}>
-                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                    </svg>
-                                </div>
-                            </div>
+                            <feature.icon className="w-5 h-5 text-neutral-400 mb-4" />
+                            <h3 className="text-white font-semibold mb-2">{feature.title}</h3>
+                            <p className="text-neutral-500 text-sm leading-relaxed">{feature.description}</p>
                         </div>
                     ))}
                 </div>
