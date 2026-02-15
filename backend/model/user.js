@@ -5,7 +5,7 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-        minlength: 4, 
+        minlength: 4,
         maxlength: 20,
     },
     email: {
@@ -20,17 +20,17 @@ const UserSchema = new mongoose.Schema({
         minlength: 8,
         maxlength: 64,
     },
-    avatarId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Avatar"
+    avatar: {
+        type: String,
+        default: "preset_1"
     },
-    role:{
+    role: {
         type: String,
         enum: ["Admin", "User"],
         default: "User"
     }
 }, {
-    timestamps: true, 
+    timestamps: true,
 });
 
 module.exports = mongoose.model("User", UserSchema);
