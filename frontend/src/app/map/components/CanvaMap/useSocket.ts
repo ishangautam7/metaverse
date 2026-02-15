@@ -93,7 +93,8 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
       if (event.candidate) {
         socket.emit('webrtc-ice', {
           to: peerId,
-          candidate: event.candidate
+          candidate: event.candidate,
+          mapUID
         });
       }
     };
@@ -116,7 +117,7 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
   useEffect(() => {
     const handleConnect = () => {
       if (!hasJoinedRef.current) {
-        socket.emit("join", { mapUID, user: { username } });
+        socket.emit("join", { mapUID, user: { username, avatar: JSON.parse(localStorage.getItem("user") || "{}").avatar || "preset_1" } });
         hasJoinedRef.current = true;
       }
     };
@@ -155,7 +156,8 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
               await pc.setLocalDescription(offer);
               socket.emit('webrtc-offer', {
                 to: playerId,
-                offer: pc.localDescription
+                offer: pc.localDescription,
+                mapUID
               });
             } catch (err) {
               console.error('Error creating offer:', err);
@@ -227,7 +229,8 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
 
         socket.emit("webrtc-answer", {
           to: from,
-          answer: pc.localDescription
+          answer: pc.localDescription,
+          mapUID
         });
       } catch (err) {
         console.error(err)
@@ -294,7 +297,8 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
             await pc.setLocalDescription(offer);
             socket.emit('webrtc-offer', {
               to: playerId,
-              offer: pc.localDescription
+              offer: pc.localDescription,
+              mapUID
             });
           } catch (err) {
             console.error(err)

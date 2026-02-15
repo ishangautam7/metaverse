@@ -16,3 +16,5 @@ export const fetchmaproute = `${host}/api/space/fetch`
 export const findMapByUIdRoute = `${host}/api/space/fetch`
 export const getsinglemapdetailsroute = `${host}/api/space/singlemap`
 export const checkmaproute = `${host}/api/space/checkmap`
+export const updateLayoutRoute = `${host}/api/space/layout`
+export const getLayoutRoute = `${host}/api/space/layout`

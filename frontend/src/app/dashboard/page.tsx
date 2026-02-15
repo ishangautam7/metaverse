@@ -11,12 +11,13 @@ import AuthGuard from "@/utils/AuthGuard"
 import PopupForm from "./components/MapPopup"
 import axios from "axios"
 import toast from "react-hot-toast"
-import { mapcreateroute, fetchmaproute } from "@/utils/Routes"
+import { mapcreateroute, fetchmaproute, updateLayoutRoute } from "@/utils/Routes"
 import { SearchBox } from "./components/SearchBox"
 import MapDetailsPopup from "./components/MapDetailsPopUp"
 import { Plus } from "lucide-react"
+import { MAP_TEMPLATES } from "./components/mapTemplates"
 
-type MapFormData = { name: string; width: number; height: number }
+type MapFormData = { name: string; width: number; height: number; templateId?: string }
 interface MapData { _id: string; name: string; width: number; height: number; image?: string; mapUID: string }
 
 export default function Dashboard() {
@@ -54,8 +55,24 @@ export default function Dashboard() {
   const handleCreate = async (data: MapFormData) => {
     try {
       const token = localStorage.getItem("token")
-      const res = await axios.post(mapcreateroute, { ...data, token })
+      const res = await axios.post(mapcreateroute, { name: data.name, width: data.width, height: data.height, token })
       if (res.status === 200) {
+        // If a template was selected, save its layout
+        if (data.templateId && data.templateId !== "blank") {
+          const template = MAP_TEMPLATES.find(t => t.id === data.templateId)
+          if (template && res.data.map?._id) {
+            try {
+              await axios.post(updateLayoutRoute, {
+                token,
+                mapId: res.data.map._id,
+                rooms: template.rooms,
+                obstacles: template.obstacles
+              })
+            } catch {
+              // Layout save failed, map still created
+            }
+          }
+        }
         toast.success(res.data.msg)
         setShowCreate(false)
         loadMaps()

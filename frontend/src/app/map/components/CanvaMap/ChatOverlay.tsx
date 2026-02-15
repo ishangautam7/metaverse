@@ -100,7 +100,7 @@ export const ChatOverlay = ({ onSendMessage, chatHistory }: ChatOverlayProps) =>
             {chatHistory.map((msg, index) => (
               <div key={index} className="text-sm">
                 <div className="flex items-baseline gap-2">
-                  <span className="font-semibold text-purple-400">{msg.username}</span>
+                  <span className="font-semibold text-white">{msg.username}</span>
                   <span className="text-gray-400 text-xs">{msg.timestamp}</span>
                 </div>
                 <div className="text-gray-200">{msg.message}</div>

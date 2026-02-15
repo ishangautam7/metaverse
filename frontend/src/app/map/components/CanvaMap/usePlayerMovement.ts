@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
-import { Position, Camera, ViewPortSize } from "./types";
+import { Position, Camera, ViewPortSize, Obstacle, Room } from "./types";
 
 interface UsePlayerMovementProps {
   width: number;
   height: number;
+  obstacles: Obstacle[];
+  rooms: Room[];
 }
 
-export const usePlayerMovement = ({ width, height }: UsePlayerMovementProps) => {
-  const [position, setPosition] = useState<Position>({ x: 300, y: 300 }); // Start in a better position
+export const usePlayerMovement = ({ width, height, obstacles, rooms }: UsePlayerMovementProps) => {
+  const [position, setPosition] = useState<Position>({ x: 300, y: 300 });
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0 });
   const [viewPortSize, setViewPortSize] = useState<ViewPortSize>({ width: 0, height: 0 });
   const [keys, setKeys] = useState<Set<string>>(new Set());
+  const [currentRoom, setCurrentRoom] = useState<string | null>(null);
   const avatarSize = 40;
 
   useEffect(() => {
@@ -26,7 +29,6 @@ export const usePlayerMovement = ({ width, height }: UsePlayerMovementProps) => 
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
-  // Handle key press and release
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
@@ -47,7 +49,7 @@ export const usePlayerMovement = ({ width, height }: UsePlayerMovementProps) => 
 
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
-    
+
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
@@ -60,11 +62,10 @@ export const usePlayerMovement = ({ width, height }: UsePlayerMovementProps) => 
 
     const moveInterval = setInterval(() => {
       setPosition(prevPosition => {
-        const moveAmount = 8; // Smooth movement
+        const moveAmount = 8;
         let newX = prevPosition.x;
         let newY = prevPosition.y;
 
-        // Handle movement
         if (keys.has("w") || keys.has("arrowup")) {
           newY = Math.max(0, prevPosition.y - moveAmount);
         }
@@ -78,20 +79,35 @@ export const usePlayerMovement = ({ width, height }: UsePlayerMovementProps) => 
           newX = Math.min(width - avatarSize, prevPosition.x + moveAmount);
         }
 
-        // Check collision with furniture and rooms
         const newPosition = { x: newX, y: newY };
-        if (checkCollision(newPosition, avatarSize)) {
-          return prevPosition; // Don't move if collision detected
+        if (checkCollision(newPosition, avatarSize, obstacles, rooms)) {
+          return prevPosition;
         }
 
         return newPosition;
       });
-    }, 16); // ~60 FPS
+    }, 16);
 
     return () => clearInterval(moveInterval);
-  }, [keys, width, height]);
+  }, [keys, width, height, obstacles, rooms]);
 
-  // Update camera to follow player
+  // Track which room the player is in
+  useEffect(() => {
+    const cx = position.x + avatarSize / 2;
+    const cy = position.y + avatarSize / 2;
+
+    let foundRoom: string | null = null;
+    for (const room of rooms) {
+      if (cx >= room.x && cx <= room.x + room.w &&
+        cy >= room.y && cy <= room.y + room.h) {
+        foundRoom = room.roomId || null;
+        break;
+      }
+    }
+    setCurrentRoom(foundRoom);
+  }, [position, rooms]);
+
+  // Update camera
   useEffect(() => {
     const halfHeight = viewPortSize.height / 2;
     const halfWidth = viewPortSize.width / 2;
@@ -102,11 +118,10 @@ export const usePlayerMovement = ({ width, height }: UsePlayerMovementProps) => 
     });
   }, [position, width, height, viewPortSize]);
 
-  return { position, camera, viewPortSize };
+  return { position, camera, viewPortSize, currentRoom };
 };
 
-// Collision detection function
-function checkCollision(position: Position, avatarSize: number): boolean {
+function checkCollision(position: Position, avatarSize: number, obstacles: Obstacle[], rooms: Room[]): boolean {
   const playerRect = {
     x: position.x,
     y: position.y,
@@ -114,49 +129,36 @@ function checkCollision(position: Position, avatarSize: number): boolean {
     h: avatarSize
   };
 
-  // Define collision areas (furniture, walls, etc.)
-  const obstacles = [
-    // Meeting room furniture
-    { x: 180, y: 180, w: 140, h: 80 }, // table
-    { x: 160, y: 160, w: 25, h: 25 }, // chairs
-    { x: 340, y: 160, w: 25, h: 25 },
-    { x: 160, y: 280, w: 25, h: 25 },
-    { x: 340, y: 280, w: 25, h: 25 },
-    
-    // Lounge furniture
-    { x: 520, y: 200, w: 80, h: 40 }, // sofas
-    { x: 620, y: 200, w: 80, h: 40 },
-    { x: 580, y: 260, w: 60, h: 40 }, // coffee table
-    
-    // Conference room
-    { x: 900, y: 200, w: 250, h: 100 }, // conference table
-    
-    // Other furniture
-    { x: 200, y: 550, w: 100, h: 60 }, // break room table
-    { x: 480, y: 600, w: 80, h: 50 }, // desks
-    { x: 580, y: 600, w: 80, h: 50 },
-    { x: 850, y: 550, w: 100, h: 80 }, // gaming table
-    
-    // Decorations
-    { x: 450, y: 120, w: 20, h: 20 }, // plants
-    { x: 780, y: 180, w: 25, h: 25 },
-    { x: 400, y: 520, w: 18, h: 18 },
-    { x: 750, y: 480, w: 22, h: 22 },
-    { x: 380, y: 450, w: 30, h: 30 }, // water cooler
-    { x: 750, y: 600, w: 40, h: 120 }, // bookshelf
-  ];
-
-  // Check collision with each obstacle
-  for (const obstacle of obstacles) {
+  // Check obstacles
+  for (const obs of obstacles) {
     if (
-      playerRect.x < obstacle.x + obstacle.w &&
-      playerRect.x + playerRect.w > obstacle.x &&
-      playerRect.y < obstacle.y + obstacle.h &&
-      playerRect.y + playerRect.h > obstacle.y
+      playerRect.x < obs.x + obs.w &&
+      playerRect.x + playerRect.w > obs.x &&
+      playerRect.y < obs.y + obs.h &&
+      playerRect.y + playerRect.h > obs.y
     ) {
-      return true; // Collision detected
+      return true;
     }
   }
 
-  return false; // No collision
+  // Check locked room walls (can't enter locked rooms)
+  for (const room of rooms) {
+    if (!room.locked) continue;
+
+    const cx = position.x + avatarSize / 2;
+    const cy = position.y + avatarSize / 2;
+    const wasInside = cx >= room.x && cx <= room.x + room.w && cy >= room.y && cy <= room.y + room.h;
+
+    if (!wasInside) {
+      // Trying to enter — check if new position is inside
+      const newCx = position.x + avatarSize / 2;
+      const newCy = position.y + avatarSize / 2;
+      if (newCx >= room.x && newCx <= room.x + room.w &&
+        newCy >= room.y && newCy <= room.y + room.h) {
+        return true; // Block entry to locked rooms
+      }
+    }
+  }
+
+  return false;
 }
