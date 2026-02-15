@@ -1,19 +1,23 @@
-import { useEffect, useState } from "react";
-import { Position, Camera, ViewPortSize, Obstacle, Room } from "./types";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { Position, Camera, ViewPortSize, Decoration, Room } from "./types";
 
 interface UsePlayerMovementProps {
   width: number;
   height: number;
-  obstacles: Obstacle[];
+  decorations: Decoration[];
   rooms: Room[];
+  editMode: boolean;
 }
 
-export const usePlayerMovement = ({ width, height, obstacles, rooms }: UsePlayerMovementProps) => {
+export const usePlayerMovement = ({ width, height, decorations, rooms, editMode }: UsePlayerMovementProps) => {
   const [position, setPosition] = useState<Position>({ x: 300, y: 300 });
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0 });
   const [viewPortSize, setViewPortSize] = useState<ViewPortSize>({ width: 0, height: 0 });
-  const [keys, setKeys] = useState<Set<string>>(new Set());
   const [currentRoom, setCurrentRoom] = useState<string | null>(null);
+  const [direction, setDirection] = useState<"up" | "down" | "left" | "right" | "idle">("idle");
+  const keysRef = useRef<Set<string>>(new Set());
+  const positionRef = useRef<Position>({ x: 300, y: 300 });
+  const rafRef = useRef<number>(0);
   const avatarSize = 40;
 
   useEffect(() => {
@@ -23,73 +27,100 @@ export const usePlayerMovement = ({ width, height, obstacles, rooms }: UsePlayer
         height: window.innerHeight - 25,
       });
     };
-
     updateSize();
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
   }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't capture keys if typing in an input
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+
       const key = e.key.toLowerCase();
-      if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
+      if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)) {
         e.preventDefault();
-        setKeys(prev => new Set(prev).add(key));
+        keysRef.current.add(key);
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
-      setKeys(prev => {
-        const newKeys = new Set(prev);
-        newKeys.delete(key);
-        return newKeys;
-      });
+      keysRef.current.delete(key);
+    };
+
+    // Clear keys on window blur (prevents stuck movement)
+    const handleBlur = () => {
+      keysRef.current.clear();
     };
 
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleBlur);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", handleBlur);
     };
   }, []);
 
-  // Movement loop
+  // Movement loop using requestAnimationFrame
   useEffect(() => {
-    if (keys.size === 0) return;
+    if (editMode) return; // No movement in edit mode
 
-    const moveInterval = setInterval(() => {
-      setPosition(prevPosition => {
-        const moveAmount = 8;
-        let newX = prevPosition.x;
-        let newY = prevPosition.y;
+    let lastTime = 0;
+    const speed = 200; // pixels per second
+
+    const loop = (time: number) => {
+      const dt = lastTime ? Math.min((time - lastTime) / 1000, 0.05) : 0;
+      lastTime = time;
+
+      const keys = keysRef.current;
+      if (keys.size > 0) {
+        const prev = positionRef.current;
+        const moveAmount = speed * dt;
+        let newX = prev.x;
+        let newY = prev.y;
+        let dir: "up" | "down" | "left" | "right" | "idle" = "idle";
 
         if (keys.has("w") || keys.has("arrowup")) {
-          newY = Math.max(0, prevPosition.y - moveAmount);
+          newY = Math.max(0, prev.y - moveAmount);
+          dir = "up";
         }
         if (keys.has("s") || keys.has("arrowdown")) {
-          newY = Math.min(height - avatarSize, prevPosition.y + moveAmount);
+          newY = Math.min(height - avatarSize, prev.y + moveAmount);
+          dir = "down";
         }
         if (keys.has("a") || keys.has("arrowleft")) {
-          newX = Math.max(0, prevPosition.x - moveAmount);
+          newX = Math.max(0, prev.x - moveAmount);
+          dir = "left";
         }
         if (keys.has("d") || keys.has("arrowright")) {
-          newX = Math.min(width - avatarSize, prevPosition.x + moveAmount);
+          newX = Math.min(width - avatarSize, prev.x + moveAmount);
+          dir = "right";
         }
 
-        const newPosition = { x: newX, y: newY };
-        if (checkCollision(newPosition, avatarSize, obstacles, rooms)) {
-          return prevPosition;
+        const newPos = { x: newX, y: newY };
+
+        // Collision check: pass old AND new position
+        if (!checkCollision(prev, newPos, avatarSize, decorations, rooms)) {
+          positionRef.current = newPos;
+          setPosition(newPos);
         }
 
-        return newPosition;
-      });
-    }, 16);
+        setDirection(dir);
+      } else {
+        setDirection("idle");
+      }
 
-    return () => clearInterval(moveInterval);
-  }, [keys, width, height, obstacles, rooms]);
+      rafRef.current = requestAnimationFrame(loop);
+    };
+
+    rafRef.current = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [width, height, decorations, rooms, editMode]);
 
   // Track which room the player is in
   useEffect(() => {
@@ -100,7 +131,7 @@ export const usePlayerMovement = ({ width, height, obstacles, rooms }: UsePlayer
     for (const room of rooms) {
       if (cx >= room.x && cx <= room.x + room.w &&
         cy >= room.y && cy <= room.y + room.h) {
-        foundRoom = room.roomId || null;
+        foundRoom = room.roomId || room.name || null;
         break;
       }
     }
@@ -113,51 +144,60 @@ export const usePlayerMovement = ({ width, height, obstacles, rooms }: UsePlayer
     const halfWidth = viewPortSize.width / 2;
 
     setCamera({
-      x: Math.min(Math.max(position.x - halfWidth, 0), width - viewPortSize.width),
-      y: Math.min(Math.max(position.y - halfHeight, 0), height - viewPortSize.height),
+      x: Math.min(Math.max(position.x - halfWidth, 0), Math.max(0, width - viewPortSize.width)),
+      y: Math.min(Math.max(position.y - halfHeight, 0), Math.max(0, height - viewPortSize.height)),
     });
   }, [position, width, height, viewPortSize]);
 
-  return { position, camera, viewPortSize, currentRoom };
+  return { position, camera, viewPortSize, currentRoom, direction };
 };
 
-function checkCollision(position: Position, avatarSize: number, obstacles: Obstacle[], rooms: Room[]): boolean {
+function checkCollision(
+  oldPos: Position,
+  newPos: Position,
+  avatarSize: number,
+  decorations: Decoration[],
+  rooms: Room[]
+): boolean {
   const playerRect = {
-    x: position.x,
-    y: position.y,
+    x: newPos.x,
+    y: newPos.y,
     w: avatarSize,
-    h: avatarSize
+    h: avatarSize,
   };
 
-  // Check obstacles
-  for (const obs of obstacles) {
+  // Check decorations (solid objects)
+  for (const dec of decorations) {
     if (
-      playerRect.x < obs.x + obs.w &&
-      playerRect.x + playerRect.w > obs.x &&
-      playerRect.y < obs.y + obs.h &&
-      playerRect.y + playerRect.h > obs.y
+      playerRect.x < dec.x + dec.w &&
+      playerRect.x + playerRect.w > dec.x &&
+      playerRect.y < dec.y + dec.h &&
+      playerRect.y + playerRect.h > dec.y
     ) {
       return true;
     }
   }
 
-  // Check locked room walls (can't enter locked rooms)
+  // Check locked room walls — only block ENTRY, not staying inside
   for (const room of rooms) {
     if (!room.locked) continue;
 
-    const cx = position.x + avatarSize / 2;
-    const cy = position.y + avatarSize / 2;
-    const wasInside = cx >= room.x && cx <= room.x + room.w && cy >= room.y && cy <= room.y + room.h;
+    // Was the player's center inside this room before?
+    const oldCx = oldPos.x + avatarSize / 2;
+    const oldCy = oldPos.y + avatarSize / 2;
+    const wasInside = oldCx >= room.x && oldCx <= room.x + room.w &&
+      oldCy >= room.y && oldCy <= room.y + room.h;
 
-    if (!wasInside) {
-      // Trying to enter — check if new position is inside
-      const newCx = position.x + avatarSize / 2;
-      const newCy = position.y + avatarSize / 2;
-      if (newCx >= room.x && newCx <= room.x + room.w &&
-        newCy >= room.y && newCy <= room.y + room.h) {
-        return true; // Block entry to locked rooms
-      }
-    }
+    // Is the player's center inside this room now?
+    const newCx = newPos.x + avatarSize / 2;
+    const newCy = newPos.y + avatarSize / 2;
+    const isInside = newCx >= room.x && newCx <= room.x + room.w &&
+      newCy >= room.y && newCy <= room.y + room.h;
+
+    // Block entry from outside
+    if (!wasInside && isInside) return true;
+    // Block exit from inside (optional: keep players trapped when room is locked)
+    // if (wasInside && !isInside) return true;
   }
 
   return false;

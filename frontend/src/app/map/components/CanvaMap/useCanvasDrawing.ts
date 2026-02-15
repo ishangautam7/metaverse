@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { PlayersMap, Position, Camera, ViewPortSize, Obstacle, Room } from "./types";
+import { PlayersMap, Position, Camera, ViewPortSize, Decoration, Room } from "./types";
 import { AVATAR_PRESETS } from "../AvatarPicker/avatarPresets";
 
 interface UseCanvasDrawingProps {
@@ -12,32 +12,27 @@ interface UseCanvasDrawingProps {
   height: number;
   remoteStreams: { [key: string]: { stream: MediaStream; username: string; position: { x: number; y: number } } };
   rooms: Room[];
-  obstacles: Obstacle[];
+  decorations: Decoration[];
   currentAvatar: string;
+  currentRoom: string | null;
+  editMode: boolean;
+  selectedItem?: { type: "room" | "decoration"; index: number } | null;
 }
 
-// Cache loaded avatar images
 const avatarImageCache: { [key: string]: HTMLImageElement } = {};
 
 function getAvatarImage(avatarKey: string): HTMLImageElement | null {
   if (avatarImageCache[avatarKey]) return avatarImageCache[avatarKey];
 
   let src: string;
-  if (avatarKey.startsWith("data:")) {
-    src = avatarKey;
-  } else if (AVATAR_PRESETS[avatarKey]) {
-    src = AVATAR_PRESETS[avatarKey];
-  } else {
-    src = AVATAR_PRESETS["preset_1"];
-  }
+  if (avatarKey.startsWith("data:")) src = avatarKey;
+  else if (AVATAR_PRESETS[avatarKey]) src = AVATAR_PRESETS[avatarKey];
+  else src = AVATAR_PRESETS["preset_1"];
 
   const img = new Image();
   img.src = src;
-  img.onload = () => {
-    avatarImageCache[avatarKey] = img;
-  };
+  img.onload = () => { avatarImageCache[avatarKey] = img; };
 
-  // Return null until loaded; next frame will have it
   if (img.complete) {
     avatarImageCache[avatarKey] = img;
     return img;
@@ -46,19 +41,10 @@ function getAvatarImage(avatarKey: string): HTMLImageElement | null {
 }
 
 export const useCanvasDrawing = ({
-  canvasRef,
-  position,
-  camera,
-  viewPortSize,
-  players,
-  width,
-  height,
-  remoteStreams,
-  rooms,
-  obstacles,
-  currentAvatar
+  canvasRef, position, camera, viewPortSize, players,
+  width, height, remoteStreams, rooms, decorations,
+  currentAvatar, currentRoom, editMode, selectedItem
 }: UseCanvasDrawingProps) => {
-  // Preload all avatar images
   const loadedRef = useRef(false);
   useEffect(() => {
     if (!loadedRef.current) {
@@ -70,85 +56,184 @@ export const useCanvasDrawing = ({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    ctx.fillStyle = "#f5f5f5";
+    ctx.fillStyle = "#f8f8f8";
     ctx.fillRect(0, 0, viewPortSize.width, viewPortSize.height);
 
     drawGrid(ctx, camera, viewPortSize, width, height);
-    drawRooms(ctx, camera, rooms);
-    drawObstacles(ctx, camera, obstacles);
-    drawPlayers(ctx, players, position, camera, viewPortSize, remoteStreams, currentAvatar);
-  }, [players, position, camera, viewPortSize, width, height, remoteStreams, rooms, obstacles, currentAvatar]);
+    drawRooms(ctx, camera, rooms, currentRoom, editMode);
+    drawDecorations(ctx, camera, decorations, editMode);
+    drawPlayers(ctx, players, position, camera, viewPortSize, remoteStreams, currentAvatar, currentRoom, rooms);
+
+    if (editMode) {
+      ctx.fillStyle = "rgba(255,255,255,0.03)";
+      ctx.fillRect(0, 0, viewPortSize.width, viewPortSize.height);
+      // Edit mode indicator
+      ctx.save();
+      ctx.fillStyle = "rgba(0,0,0,0.6)";
+      ctx.font = "600 11px Inter, system-ui, sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("EDIT MODE", 12, 24);
+      ctx.restore();
+
+      // Selection highlight
+      if (selectedItem) {
+        const item = selectedItem.type === "room"
+          ? rooms[selectedItem.index]
+          : decorations[selectedItem.index];
+        if (item) {
+          const sx = item.x - camera.x;
+          const sy = item.y - camera.y;
+          ctx.save();
+          ctx.strokeStyle = "#3b82f6";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([6, 3]);
+          ctx.strokeRect(sx - 3, sy - 3, item.w + 6, item.h + 6);
+          ctx.setLineDash([]);
+          // Corner handles
+          const hs = 6;
+          ctx.fillStyle = "#3b82f6";
+          [[sx - hs / 2, sy - hs / 2], [sx + item.w - hs / 2, sy - hs / 2],
+          [sx - hs / 2, sy + item.h - hs / 2], [sx + item.w - hs / 2, sy + item.h - hs / 2]].forEach(([hx, hy]) => {
+            ctx.fillRect(hx, hy, hs, hs);
+          });
+          ctx.restore();
+        }
+      }
+    }
+  }, [players, position, camera, viewPortSize, width, height, remoteStreams, rooms, decorations, currentAvatar, currentRoom, editMode, selectedItem]);
 };
 
-function drawGrid(ctx: CanvasRenderingContext2D, camera: Camera, viewPortSize: ViewPortSize, width: number, height: number) {
-  ctx.strokeStyle = "#e5e5e5";
+function drawGrid(ctx: CanvasRenderingContext2D, camera: Camera, vp: ViewPortSize, w: number, h: number) {
+  ctx.strokeStyle = "#ebebeb";
   ctx.lineWidth = 1;
-
-  const gridSize = 40;
-  const startX = Math.floor(camera.x / gridSize) * gridSize - camera.x;
-  const startY = Math.floor(camera.y / gridSize) * gridSize - camera.y;
-
-  for (let x = startX; x <= viewPortSize.width; x += gridSize) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, viewPortSize.height);
-    ctx.stroke();
+  const gs = 40;
+  const sx = Math.floor(camera.x / gs) * gs - camera.x;
+  const sy = Math.floor(camera.y / gs) * gs - camera.y;
+  for (let x = sx; x <= vp.width; x += gs) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, vp.height); ctx.stroke();
   }
-  for (let y = startY; y <= viewPortSize.height; y += gridSize) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(viewPortSize.width, y);
-    ctx.stroke();
+  for (let y = sy; y <= vp.height; y += gs) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(vp.width, y); ctx.stroke();
   }
-
-  const bx = -camera.x;
-  const by = -camera.y;
   ctx.strokeStyle = "#d4d4d4";
   ctx.lineWidth = 2;
-  ctx.strokeRect(bx, by, width, height);
+  ctx.strokeRect(-camera.x, -camera.y, w, h);
 }
 
-function drawRooms(ctx: CanvasRenderingContext2D, camera: Camera, rooms: Room[]) {
+function drawRooms(ctx: CanvasRenderingContext2D, camera: Camera, rooms: Room[], currentRoom: string | null, editMode: boolean) {
   rooms.forEach(room => {
     const dx = room.x - camera.x;
     const dy = room.y - camera.y;
+    const isInRoom = currentRoom === (room.roomId || room.name);
 
-    ctx.fillStyle = room.color || "#f0f0f0";
-    ctx.globalAlpha = 0.15;
+    // Room fill
+    ctx.fillStyle = room.color || "#e0e7ff";
+    ctx.globalAlpha = isInRoom ? 0.2 : 0.1;
     ctx.fillRect(dx, dy, room.w, room.h);
     ctx.globalAlpha = 1;
 
-    ctx.strokeStyle = room.locked ? "#ef4444" : "#a3a3a3";
-    ctx.lineWidth = room.locked ? 2 : 1;
-    ctx.setLineDash(room.locked ? [6, 4] : []);
+    // Room border
+    if (room.locked) {
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+    } else if (isInRoom) {
+      ctx.strokeStyle = "#3b82f6";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+    } else {
+      ctx.strokeStyle = "#a3a3a3";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([]);
+    }
     ctx.strokeRect(dx, dy, room.w, room.h);
     ctx.setLineDash([]);
 
-    ctx.font = "600 12px Inter, system-ui, sans-serif";
-    ctx.fillStyle = "#525252";
+    // Room label
+    ctx.font = "600 11px Inter, system-ui, sans-serif";
+    ctx.fillStyle = room.locked ? "#ef4444" : "#525252";
     ctx.textAlign = "left";
-    ctx.fillText(
-      room.locked ? `🔒 ${room.name}` : room.name,
-      dx + 8,
-      dy + 18
-    );
+    const label = room.locked ? `🔒 ${room.name}` : room.name;
+    ctx.fillText(label, dx + 8, dy + 16);
+
+    // Edit mode: show drag handles
+    if (editMode) {
+      ctx.fillStyle = "rgba(59, 130, 246, 0.5)";
+      ctx.fillRect(dx + room.w - 8, dy + room.h - 8, 8, 8);
+    }
   });
 }
 
-function drawObstacles(ctx: CanvasRenderingContext2D, camera: Camera, obstacles: Obstacle[]) {
-  obstacles.forEach(obs => {
-    const dx = obs.x - camera.x;
-    const dy = obs.y - camera.y;
+// Decoration drawing with distinct shapes per type
+const DECORATION_COLORS: Record<string, { fill: string; stroke: string; label: string }> = {
+  table: { fill: "#d4a574", stroke: "#a67c52", label: "T" },
+  plant: { fill: "#86efac", stroke: "#22c55e", label: "🌱" },
+  bookshelf: { fill: "#c4b5fd", stroke: "#8b5cf6", label: "B" },
+  sofa: { fill: "#fca5a5", stroke: "#ef4444", label: "S" },
+  desk: { fill: "#d6d3d1", stroke: "#78716c", label: "D" },
+  divider: { fill: "#e5e7eb", stroke: "#9ca3af", label: "|" },
+  lamp: { fill: "#fde68a", stroke: "#f59e0b", label: "L" },
+  generic: { fill: "#d4d4d8", stroke: "#a1a1aa", label: "○" },
+};
 
-    ctx.fillStyle = "#d4d4d4";
-    ctx.fillRect(dx, dy, obs.w, obs.h);
-    ctx.strokeStyle = "#a3a3a3";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(dx, dy, obs.w, obs.h);
+function drawDecorations(ctx: CanvasRenderingContext2D, camera: Camera, decorations: Decoration[], editMode: boolean) {
+  decorations.forEach(dec => {
+    const dx = dec.x - camera.x;
+    const dy = dec.y - camera.y;
+    const style = DECORATION_COLORS[dec.type] || DECORATION_COLORS.generic;
+
+    // Shadow
+    ctx.fillStyle = "rgba(0,0,0,0.08)";
+    ctx.fillRect(dx + 2, dy + 2, dec.w, dec.h);
+
+    // Body
+    ctx.fillStyle = style.fill;
+    if (dec.type === "plant") {
+      // Rounded
+      const r = Math.min(dec.w, dec.h) / 4;
+      ctx.beginPath();
+      ctx.roundRect(dx, dy, dec.w, dec.h, r);
+      ctx.fill();
+      ctx.strokeStyle = style.stroke;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    } else if (dec.type === "sofa") {
+      // Rounded rectangle
+      ctx.beginPath();
+      ctx.roundRect(dx, dy, dec.w, dec.h, 6);
+      ctx.fill();
+      ctx.strokeStyle = style.stroke;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    } else if (dec.type === "divider") {
+      ctx.fillRect(dx, dy, dec.w, dec.h);
+      // Dashed pattern
+      ctx.strokeStyle = style.stroke;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.strokeRect(dx, dy, dec.w, dec.h);
+      ctx.setLineDash([]);
+    } else {
+      ctx.fillRect(dx, dy, dec.w, dec.h);
+      ctx.strokeStyle = style.stroke;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(dx, dy, dec.w, dec.h);
+    }
+
+    // Label
+    ctx.font = "600 10px Inter, system-ui, sans-serif";
+    ctx.fillStyle = style.stroke;
+    ctx.textAlign = "center";
+    ctx.fillText(style.label, dx + dec.w / 2, dy + dec.h / 2 + 4);
+
+    // Edit mode drag handle
+    if (editMode) {
+      ctx.fillStyle = "rgba(59, 130, 246, 0.5)";
+      ctx.fillRect(dx + dec.w - 6, dy + dec.h - 6, 6, 6);
+    }
   });
 }
 
@@ -157,112 +242,108 @@ function drawPlayers(
   players: PlayersMap,
   currentPosition: Position,
   camera: Camera,
-  viewPortSize: ViewPortSize,
+  vp: ViewPortSize,
   remoteStreams: { [key: string]: { stream: MediaStream; username: string; position: { x: number; y: number } } },
-  currentAvatar: string
+  currentAvatar: string,
+  currentRoom: string | null,
+  rooms: Room[]
 ) {
   const avatarSize = 40;
   const currentSocketId = (window as any).socketId;
 
   // Current user
-  const drawX = currentPosition.x - camera.x;
-  const drawY = currentPosition.y - camera.y;
-
-  if (drawX >= -avatarSize && drawX <= viewPortSize.width + avatarSize &&
-    drawY >= -avatarSize && drawY <= viewPortSize.height + avatarSize) {
-    drawSinglePlayer(ctx, {
-      drawX,
-      drawY,
-      avatarSize,
-      username: JSON.parse(localStorage.getItem("user") || "{}").username || "You",
-      isSelf: true,
-      avatarKey: currentAvatar
-    });
+  const myDx = currentPosition.x - camera.x;
+  const myDy = currentPosition.y - camera.y;
+  if (myDx >= -avatarSize && myDx <= vp.width + avatarSize &&
+    myDy >= -avatarSize && myDy <= vp.height + avatarSize) {
+    drawSinglePlayer(ctx, myDx, myDy, avatarSize,
+      JSON.parse(localStorage.getItem("user") || "{}").username || "You",
+      true, currentAvatar);
   }
 
   // Other players
   Object.entries(players).forEach(([socketId, player]) => {
-    if (!player || !player.position || socketId === currentSocketId) return;
+    if (!player?.position || socketId === currentSocketId) return;
 
-    const drawX = player.position.x - camera.x;
-    const drawY = player.position.y - camera.y;
+    // Hide players inside locked rooms if viewer is outside
+    const playerRoom = player.currentRoom;
+    if (playerRoom) {
+      const room = rooms.find(r => (r.roomId || r.name) === playerRoom);
+      if (room?.locked && currentRoom !== playerRoom) return; // Hidden
+    }
 
-    if (
-      drawX + avatarSize < -20 || drawX > viewPortSize.width + 20 ||
-      drawY + avatarSize < -20 || drawY > viewPortSize.height + 20
-    ) return;
+    const dx = player.position.x - camera.x;
+    const dy = player.position.y - camera.y;
+    if (dx + avatarSize < -20 || dx > vp.width + 20 ||
+      dy + avatarSize < -20 || dy > vp.height + 20) return;
 
-    drawSinglePlayer(ctx, {
-      drawX,
-      drawY,
-      avatarSize,
-      username: player.username || 'Unknown',
-      isSelf: false,
-      avatarKey: player.avatar || "preset_1"
-    });
+    drawSinglePlayer(ctx, dx, dy, avatarSize,
+      player.username || 'Unknown', false,
+      player.avatar || "preset_1");
   });
 }
 
-function drawSinglePlayer(ctx: CanvasRenderingContext2D, {
-  drawX,
-  drawY,
-  avatarSize,
-  username,
-  isSelf,
-  avatarKey,
-}: {
-  drawX: number;
-  drawY: number;
-  avatarSize: number;
-  username: string;
-  isSelf: boolean;
-  avatarKey: string;
-}) {
-  const centerX = drawX + avatarSize / 2;
-  const centerY = drawY + avatarSize / 2;
-  const radius = avatarSize / 2;
+function drawSinglePlayer(
+  ctx: CanvasRenderingContext2D,
+  drawX: number, drawY: number,
+  avatarSize: number,
+  username: string,
+  isSelf: boolean,
+  avatarKey: string
+) {
+  const cx = drawX + avatarSize / 2;
+  const cy = drawY + avatarSize / 2;
+  const r = avatarSize / 2;
 
-  // Try to draw avatar image
+  // Shadow
+  ctx.fillStyle = "rgba(0,0,0,0.12)";
+  ctx.beginPath();
+  ctx.ellipse(cx, drawY + avatarSize + 2, r * 0.7, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Avatar image or fallback
   const img = getAvatarImage(avatarKey);
   if (img) {
     ctx.save();
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.closePath();
     ctx.clip();
     ctx.drawImage(img, drawX, drawY, avatarSize, avatarSize);
     ctx.restore();
   } else {
-    // Fallback circle
-    ctx.fillStyle = isSelf ? "#171717" : "#525252";
+    ctx.fillStyle = isSelf ? "#3b82f6" : "#6b7280";
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // White border ring
-  ctx.strokeStyle = "#fff";
+  // Border ring
+  ctx.strokeStyle = isSelf ? "#fff" : "rgba(255,255,255,0.8)";
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.stroke();
 
-  // Username label
-  ctx.font = "500 11px Inter, system-ui, sans-serif";
+  // Username
+  ctx.font = "500 10px Inter, system-ui, sans-serif";
   ctx.textAlign = "center";
   const tw = ctx.measureText(username).width;
-
-  ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-  ctx.fillRect(centerX - tw / 2 - 4, drawY - 16, tw + 8, 16);
-  ctx.fillStyle = "white";
-  ctx.fillText(username, centerX, drawY - 4);
+  ctx.fillStyle = "rgba(0,0,0,0.7)";
+  ctx.beginPath();
+  ctx.roundRect(cx - tw / 2 - 5, drawY - 18, tw + 10, 16, 4);
+  ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.fillText(username, cx, drawY - 6);
 
   if (isSelf) {
-    ctx.fillStyle = "rgba(23, 23, 23, 0.8)";
-    ctx.font = "600 9px Inter, system-ui, sans-serif";
+    ctx.fillStyle = "rgba(59, 130, 246, 0.8)";
+    ctx.font = "700 8px Inter, system-ui, sans-serif";
     const youW = ctx.measureText("YOU").width;
-    ctx.fillRect(centerX - youW / 2 - 3, drawY + avatarSize + 4, youW + 6, 13);
-    ctx.fillStyle = "white";
-    ctx.fillText("YOU", centerX, drawY + avatarSize + 14);
+    ctx.beginPath();
+    ctx.roundRect(cx - youW / 2 - 3, drawY + avatarSize + 5, youW + 6, 12, 3);
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.fillText("YOU", cx, drawY + avatarSize + 14);
   }
 }

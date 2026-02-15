@@ -24,8 +24,11 @@ export interface ViewPortSize {
     height: number;
 }
 
-export interface Obstacle {
-    obstacleId?: string;
+export type DecorationType = "table" | "plant" | "bookshelf" | "sofa" | "desk" | "divider" | "lamp" | "generic";
+
+export interface Decoration {
+    decorationId?: string;
+    type: DecorationType;
     x: number;
     y: number;
     w: number;
