@@ -6,6 +6,7 @@ import {
     VideoCameraSlashIcon,
     ComputerDesktopIcon,
 } from '@heroicons/react/24/solid';
+import { Settings } from 'lucide-react';
 
 interface MediaControlsProps {
     isMuted: boolean;
@@ -15,16 +16,15 @@ interface MediaControlsProps {
     onToggleCamera: () => void;
     onToggleScreenShare: () => void;
     handleExitRoom: () => void;
+    isOwner?: boolean;
+    editMode?: boolean;
+    onToggleEditMode?: () => void;
 }
 
 const MediaControls = ({
-    isMuted,
-    isCameraOn,
-    isSharingScreen,
-    onToggleMute,
-    onToggleCamera,
-    onToggleScreenShare,
-    handleExitRoom
+    isMuted, isCameraOn, isSharingScreen,
+    onToggleMute, onToggleCamera, onToggleScreenShare,
+    handleExitRoom, isOwner, editMode, onToggleEditMode
 }: MediaControlsProps) => {
     return (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 bg-neutral-900 border border-neutral-700 shadow-lg rounded-full px-4 py-2 flex gap-2 items-center">
@@ -46,10 +46,7 @@ const MediaControls = ({
 
             <button
                 onClick={onToggleCamera}
-                className={`p-2.5 rounded-full transition-colors ${isCameraOn
-                    ? 'bg-neutral-800 hover:bg-neutral-700'
-                    : 'bg-neutral-800 hover:bg-neutral-700'
-                    }`}
+                className='p-2.5 rounded-full transition-colors bg-neutral-800 hover:bg-neutral-700'
                 title={isCameraOn ? 'Turn off camera' : 'Turn on camera'}
                 disabled={isSharingScreen}
             >
@@ -70,6 +67,23 @@ const MediaControls = ({
             >
                 <ComputerDesktopIcon className={`h-5 w-5 ${isSharingScreen ? 'text-blue-400' : 'text-neutral-500'}`} />
             </button>
+
+            {/* Edit/Settings button — visible to owner */}
+            {isOwner && onToggleEditMode && (
+                <>
+                    <div className="w-px h-6 bg-neutral-700 mx-1" />
+                    <button
+                        onClick={onToggleEditMode}
+                        className={`p-2.5 rounded-full transition-colors ${editMode
+                            ? 'bg-blue-500/20 hover:bg-blue-500/30'
+                            : 'bg-neutral-800 hover:bg-neutral-700'
+                            }`}
+                        title={editMode ? 'Exit Edit Mode' : 'Edit Map'}
+                    >
+                        <Settings className={`h-5 w-5 ${editMode ? 'text-blue-400' : 'text-neutral-500'}`} />
+                    </button>
+                </>
+            )}
 
             <div className="w-px h-6 bg-neutral-700 mx-1" />
 

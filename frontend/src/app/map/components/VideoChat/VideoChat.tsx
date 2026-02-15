@@ -12,26 +12,23 @@ interface VideoChatProps {
     onToggleCamera: () => void;
     onToggleScreenShare: () => void;
     handleExitRoom: () => void;
-    remoteStreams: { [key:string]:{
-        stream: MediaStream;
-        username: string;
-        position:{
-            x: number;
-            y: number;
+    remoteStreams: {
+        [key: string]: {
+            stream: MediaStream;
+            username: string;
+            position: { x: number; y: number };
         }
-    }}
+    };
+    isOwner?: boolean;
+    editMode?: boolean;
+    onToggleEditMode?: () => void;
 }
 
-export const VideoChat = ({ 
-    localStream, 
-    isMuted, 
-    isCameraOn, 
-    isSharingScreen, 
-    onToggleMute, 
-    onToggleCamera, 
-    onToggleScreenShare, 
-    remoteStreams,
-    handleExitRoom
+export const VideoChat = ({
+    localStream, isMuted, isCameraOn, isSharingScreen,
+    onToggleMute, onToggleCamera, onToggleScreenShare,
+    remoteStreams, handleExitRoom,
+    isOwner, editMode, onToggleEditMode
 }: VideoChatProps) => {
     return (
         <>
@@ -41,7 +38,6 @@ export const VideoChat = ({
                 isCameraOn={isCameraOn}
                 isSharingScreen={isSharingScreen}
             />
-
             <MediaControls
                 isMuted={isMuted}
                 isCameraOn={isCameraOn}
@@ -50,6 +46,9 @@ export const VideoChat = ({
                 onToggleCamera={onToggleCamera}
                 onToggleScreenShare={onToggleScreenShare}
                 handleExitRoom={handleExitRoom}
+                isOwner={isOwner}
+                editMode={editMode}
+                onToggleEditMode={onToggleEditMode}
             />
         </>
     );
