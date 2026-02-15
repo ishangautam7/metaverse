@@ -85,17 +85,12 @@ export const Login = ({ onClose }: LoginProps) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
-            {/* Background Effects */}
-            <div className="absolute inset-0">
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"></div>
-            </div>
+            {/* Background Effects Removed */}
 
             <div className="relative w-[90%] max-w-md" ref={loginRef}>
-                {/* Glow Effect */}
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-2xl blur opacity-30"></div>
+                {/* Glow Effect Removed */}
 
-                <div className="relative bg-black/80 backdrop-blur-xl text-white p-8 rounded-2xl shadow-2xl border border-white/20 animate-fadeIn">
+                <div className="relative bg-gray-900 border border-white/10 text-white p-8 rounded-2xl shadow-2xl animate-fadeIn">
                     <button
                         onClick={onClose}
                         className="absolute top-4 right-4 text-xl font-bold text-gray-300 hover:text-white hover:bg-white/10 w-8 h-8 rounded-full flex items-center justify-center transition-all"
@@ -104,7 +99,7 @@ export const Login = ({ onClose }: LoginProps) => {
                     </button>
 
                     <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-2">
+                        <h2 className="text-3xl font-bold text-white mb-2">
                             Sign In
                         </h2>
                         <p className="text-gray-400">Continue your virtual journey</p>
@@ -139,9 +134,8 @@ export const Login = ({ onClose }: LoginProps) => {
 
                         <button
                             type="submit"
-                            className="group w-full bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-semibold py-4 rounded-xl hover:from-purple-700 hover:to-cyan-600 transition-all duration-300 shadow-lg hover:shadow-purple-500/25 relative overflow-hidden"
+                            className="group w-full bg-purple-600 text-white font-semibold py-4 rounded-xl hover:bg-purple-700 transition-all duration-300 shadow-lg"
                         >
-                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                             <span className="relative z-10">Sign In</span>
                         </button>
                     </form>

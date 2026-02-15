@@ -55,38 +55,18 @@ const RegisterPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black text-white px-4 relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:50px_50px] opacity-5"></div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-950 text-white px-4 relative overflow-hidden">
+      {/* Background Effects Removed */}
 
-      {/* Floating Particles */}
-      <div className="absolute inset-0 overflow-hidden">
-        {[...Array(30)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-white/20 rounded-full animate-pulse"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${2 + Math.random() * 3}s`
-            }}
-          />
-        ))}
-      </div>
+
 
       <div className="relative w-full max-w-md">
-        {/* Glow Effect */}
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-2xl blur opacity-30"></div>
-        
-        <div className="relative bg-black/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-white/20">
+        {/* Glow Effect Removed */}
+
+        <div className="relative bg-gray-900 p-8 rounded-2xl shadow-2xl border border-white/10">
           {/* Header */}
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-2">
+            <h2 className="text-3xl font-bold text-white mb-2">
               Create Your Account
             </h2>
             <p className="text-gray-400">Start your virtual collaboration journey</p>
@@ -132,11 +112,10 @@ const RegisterPage = () => {
               />
             </div>
 
-            <button 
-              type="submit" 
-              className="group w-full bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-semibold py-4 rounded-xl hover:from-purple-700 hover:to-cyan-600 transition-all duration-300 shadow-lg hover:shadow-purple-500/25 relative overflow-hidden"
+            <button
+              type="submit"
+              className="group w-full bg-purple-600 text-white font-semibold py-4 rounded-xl hover:bg-purple-700 transition-all duration-300 shadow-lg"
             >
-              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <span className="relative z-10">Create Account</span>
             </button>
           </form>
@@ -147,15 +126,15 @@ const RegisterPage = () => {
             <div className="flex-1 border-t border-white/20"></div>
           </div>
 
-          <button 
-            onClick={() => toast("Google Auth coming soon!")} 
+          <button
+            onClick={() => toast("Google Auth coming soon!")}
             className="group w-full py-3 border border-white/30 rounded-xl hover:bg-white/10 hover:border-white/40 transition-all backdrop-blur-sm"
           >
             <div className="flex justify-center items-center gap-3">
-              <Image 
-                src="/assests/google-logo.svg" 
-                alt="Google" 
-                width={20} 
+              <Image
+                src="/assests/google-logo.svg"
+                alt="Google"
+                width={20}
                 height={20}
                 className="h-5 w-5"
               />

@@ -3,6 +3,7 @@ import { useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { findMapByUIdRoute } from "@/utils/Routes"
 import toast from "react-hot-toast"
+import { Search } from "lucide-react"
 
 interface MapData { _id: string; name: string; width: number; height: number; image?: string; mapUID: string }
 
@@ -57,7 +58,7 @@ export const SearchBox = ({ roomId, setRoomId, setFoundMap }: SearchProps) => {
         <div className="space-y-4">
             <div>
                 <label htmlFor="roomId" className="text-sm font-medium text-gray-300 flex items-center gap-2 mb-2">
-                    <span>🔍</span> Find Virtual Space
+                    <Search className="w-4 h-4 text-purple-400" /> Find Virtual Space
                 </label>
                 <div className="flex gap-2">
                     <input
@@ -70,9 +71,9 @@ export const SearchBox = ({ roomId, setRoomId, setFoundMap }: SearchProps) => {
                     />
                     <button
                         onClick={handleJoin}
-                        className="px-4 bg-gradient-to-r from-purple-600/80 to-cyan-600/80 hover:from-purple-600 hover:to-cyan-600 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-purple-500/25"
+                        className="px-4 bg-gradient-to-r from-purple-600/80 to-cyan-600/80 hover:from-purple-600 hover:to-cyan-600 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-purple-500/25 flex items-center justify-center"
                     >
-                        🔍
+                        <Search className="w-5 h-5" />
                     </button>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">Enter a 12-digit Map UID to join someone else's space</p>

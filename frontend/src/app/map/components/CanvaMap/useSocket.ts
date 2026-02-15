@@ -59,7 +59,9 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
         { urls: 'stun:stun2.l.google.com:19302' },
-        { urls: 'stun:stun3.l.google.com:19302' }
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' },
+        { urls: 'stun:stun.services.mozilla.com' }
       ]
     });
 
@@ -121,7 +123,7 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
 
     const handlePlayersUpdate = (serverPlayers: PlayersMap) => {
       setPlayers(serverPlayers);
-      
+
       const currentSocketId = socketIdRef.current;
       if (!currentSocketId) return;
 
@@ -142,24 +144,23 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
       Object.keys(serverPlayers).forEach((playerId) => {
         if (playerId !== currentSocketId && !peerConnectionsRef.current[playerId]) {
           const pc = createPeerConnection(playerId);
-          
-          if (localStreamRef.current) {
-            setTimeout(async () => {
-              try {
-                const offer = await pc.createOffer({
-                  offerToReceiveAudio: true,
-                  offerToReceiveVideo: true
-                });
-                await pc.setLocalDescription(offer);
-                socket.emit('webrtc-offer', {
-                  to: playerId,
-                  offer: pc.localDescription
-                });
-              } catch (err) {
-                console.error(err)
-              }
-            }, 200);
-          }
+
+          // Create offer regardless of local stream (receive-only is fine)
+          setTimeout(async () => {
+            try {
+              const offer = await pc.createOffer({
+                offerToReceiveAudio: true,
+                offerToReceiveVideo: true
+              });
+              await pc.setLocalDescription(offer);
+              socket.emit('webrtc-offer', {
+                to: playerId,
+                offer: pc.localDescription
+              });
+            } catch (err) {
+              console.error('Error creating offer:', err);
+            }
+          }, 200);
         }
       });
 
@@ -218,7 +219,7 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
       if (!pc) {
         pc = createPeerConnection(from);
       }
-      
+
       try {
         await pc.setRemoteDescription(new RTCSessionDescription(offer));
         const answer = await pc.createAnswer();
@@ -306,7 +307,7 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
   // Handle position updates
   useEffect(() => {
     socket.emit("move", { mapUID, position });
-    
+
     setRemoteStreams(prev => {
       const updated = { ...prev };
       Object.keys(updated).forEach(id => {

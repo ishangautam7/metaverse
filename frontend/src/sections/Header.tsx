@@ -42,14 +42,13 @@ export const Header = () => {
     return (
         <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-black/90 backdrop-blur-lg border-b border-white/10' : 'bg-transparent'}`}>
             {!isClosed && (
-                <div className='bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 flex justify-center items-center py-3 gap-3 text-sm relative w-full'>
-                    <div className="absolute inset-0 bg-black/20"></div>
-                    <p className='text-white/90 hidden md:block relative z-10'>Experience the future of virtual collaboration</p>
-                    <div className='inline-flex gap-1 items-center relative z-10 bg-white/10 px-3 py-1 rounded-full backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all cursor-pointer'>
+                <div className='bg-purple-900 flex justify-center items-center py-3 gap-3 text-sm relative w-full'>
+                    <p className='text-white/90 hidden md:block'>Experience the future of virtual collaboration</p>
+                    <div className='inline-flex gap-1 items-center bg-white/10 px-3 py-1 rounded-full backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all cursor-pointer'>
                         <p className="text-white font-medium">Try for Free</p>
                         <ArrowRight className='h-4 w-4 text-white' />
                     </div>
-                    <button className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-1 hover:bg-white/10 rounded-full transition-all">
+                    <button className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded-full transition-all">
                         <Cross className='h-4 w-4 text-white' onClick={() => setIsClosed(true)} />
                     </button>
                 </div>
@@ -60,10 +59,9 @@ export const Header = () => {
                     <div className='flex items-center justify-between'>
                         <div className="flex items-center gap-3">
                             <div className="relative">
-                                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full blur-sm opacity-75"></div>
                                 <Image src={Logo} alt='NexRoom' height={40} width={40} className="relative z-10 rounded-full" />
                             </div>
-                            <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                            <span className="text-2xl font-bold text-white">
                                 NexRoom
                             </span>
                         </div>
@@ -84,7 +82,7 @@ export const Header = () => {
                                     Sign In
                                 </button>
                                 <Link href="/register">
-                                    <button className='px-6 py-2 rounded-full bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-medium hover:from-purple-700 hover:to-cyan-600 transition-all shadow-lg hover:shadow-purple-500/25'>
+                                    <button className='px-6 py-2 rounded-full bg-purple-600 text-white font-medium hover:bg-purple-700 transition-all shadow-lg'>
                                         Get Started
                                     </button>
                                 </Link>

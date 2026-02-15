@@ -45,11 +45,8 @@ export const Features = () => {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
     return (
-        <section id="features" className="py-24 bg-gradient-to-b from-black to-gray-900 relative overflow-hidden">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 opacity-5">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:50px_50px]"></div>
-            </div>
+        <section id="features" className="py-24 bg-gray-950 relative overflow-hidden">
+            {/* Background Pattern Removed */}
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 {/* Section Header */}
@@ -57,7 +54,7 @@ export const Features = () => {
                     <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-4 py-2 text-sm text-white/80 mb-6">
                         <span>Features</span>
                     </div>
-                    <h2 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-6">
+                    <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
                         Everything You Need
                     </h2>
                     <p className="text-xl text-gray-400 max-w-3xl mx-auto">
@@ -74,18 +71,17 @@ export const Features = () => {
                             onMouseEnter={() => setHoveredIndex(index)}
                             onMouseLeave={() => setHoveredIndex(null)}
                         >
-                            {/* Glow Effect */}
-                            <div className={`absolute -inset-0.5 bg-gradient-to-r ${feature.color} rounded-2xl blur opacity-0 group-hover:opacity-75 transition duration-300`}></div>
+                            {/* Glow Effect Removed */}
 
                             {/* Card */}
-                            <div className="relative bg-gray-900/50 backdrop-blur-sm border border-white/10 rounded-2xl p-8 h-full hover:bg-gray-800/50 transition-all duration-300">
+                            <div className="relative bg-gray-900 border border-white/10 rounded-2xl p-8 h-full hover:bg-gray-800 transition-all duration-300">
                                 {/* Icon */}
                                 <div className="text-4xl mb-4 transform group-hover:scale-110 transition-transform duration-300">
                                     {feature.icon}
                                 </div>
 
                                 {/* Content */}
-                                <h3 className="text-xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:from-white group-hover:to-gray-300 transition-all duration-300">
+                                <h3 className="text-xl font-bold text-white mb-3 transition-all duration-300">
                                     {feature.title}
                                 </h3>
                                 <p className="text-gray-400 leading-relaxed group-hover:text-gray-300 transition-colors duration-300">

@@ -8,15 +8,14 @@ export const Footer = () => {
         <footer className="bg-black border-t border-white/10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    
+
                     {/* Brand Section */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
                             <div className="relative">
-                                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full blur-sm opacity-75"></div>
                                 <Image src={Logo} alt='NexRoom' height={32} width={32} className="relative z-10 rounded-full" />
                             </div>
-                            <span className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                            <span className="text-xl font-bold text-white">
                                 NexRoom
                             </span>
                         </div>

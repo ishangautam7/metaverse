@@ -14,6 +14,7 @@ import toast from "react-hot-toast"
 import { mapcreateroute, fetchmaproute } from "@/utils/Routes"
 import { SearchBox } from "./components/SearchBox"
 import MapDetailsPopup from "./components/MapDetailsPopUp"
+import { Map, Link as LinkIcon, Plus, LayoutGrid } from "lucide-react"
 
 type MapFormData = { name: string; width: number; height: number }
 interface MapData { _id: string; name: string; width: number; height: number; image?: string; mapUID: string }
@@ -113,20 +114,20 @@ export default function Dashboard() {
             </div>
 
             {/* Join Map Button */}
-            <button 
-              onClick={handleJoin} 
+            <button
+              onClick={handleJoin}
               className="group w-full bg-gradient-to-r from-purple-600/20 to-cyan-600/20 backdrop-blur-sm border-2 border-white/20 text-white py-3 mb-6 rounded-xl font-semibold hover:from-purple-600/30 hover:to-cyan-600/30 hover:border-white/30 transition-all duration-300 relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-cyan-600 opacity-0 group-hover:opacity-10 transition-opacity"></div>
               <span className="relative z-10 flex items-center justify-center gap-2">
-                🔗 Join Selected Map
+                <LinkIcon className="w-4 h-4" /> Join Selected Map
               </span>
             </button>
 
             {/* Found Map Display */}
             {foundMap && (
-              <div 
-                onClick={() => { setSelectedMapId(foundMap._id)}} 
+              <div
+                onClick={() => { setSelectedMapId(foundMap._id) }}
                 className={`mb-6 cursor-pointer bg-white/5 backdrop-blur-md rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border-2 ${selectedMapId === foundMap._id ? 'border-green-400 shadow-green-400/20' : 'border-white/10 hover:border-white/20'}`}
               >
                 <div className="h-32 relative">
@@ -153,6 +154,7 @@ export default function Dashboard() {
             >
               <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <span className="relative z-10 flex items-center justify-center gap-2">
+                <Plus className="w-5 h-5" />
                 Create New Map
               </span>
             </button>
@@ -169,38 +171,38 @@ export default function Dashboard() {
 
             {maps.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-64 text-center">
-                <div className="text-6xl mb-4 opacity-50">🗺️</div>
+                <Map className="w-16 h-16 mb-4 text-gray-600 opacity-50" />
                 <h3 className="text-xl font-semibold text-white mb-2">No Maps Yet</h3>
                 <p className="text-gray-400 mb-6">Create your first virtual space to get started</p>
                 <button
                   onClick={() => setShowCreate(true)}
-                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-medium rounded-full hover:from-purple-700 hover:to-cyan-600 transition-all"
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-medium rounded-full hover:from-purple-700 hover:to-cyan-600 transition-all flex items-center gap-2"
                 >
-                  Create Your First Map
+                  <Plus className="w-4 h-4" /> Create Your First Map
                 </button>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {maps.map(map => (
-                  <div 
-                    key={map._id} 
-                    onClick={() => setSelectedMapId(map._id)} 
+                  <div
+                    key={map._id}
+                    onClick={() => setSelectedMapId(map._id)}
                     className={`group cursor-pointer bg-white/5 backdrop-blur-md rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border-2 ${selectedMapId === map._id ? 'border-green-400 shadow-green-400/20 scale-105' : 'border-white/10 hover:border-white/20 hover:scale-102'}`}
                   >
                     {/* Glow Effect */}
                     <div className={`absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl blur opacity-0 group-hover:opacity-30 transition duration-300 ${selectedMapId === map._id ? 'opacity-50' : ''}`}></div>
-                    
+
                     <div className="relative">
                       <div className="h-40 relative overflow-hidden">
-                        <Image 
-                          src={MapImage || map.image} 
-                          alt={map.name} 
-                          layout="fill" 
+                        <Image
+                          src={MapImage || map.image}
+                          alt={map.name}
+                          layout="fill"
                           objectFit="cover"
                           className="group-hover:scale-110 transition-transform duration-500"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                        
+
                         {/* Selection Indicator */}
                         {selectedMapId === map._id && (
                           <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
@@ -210,7 +212,7 @@ export default function Dashboard() {
                           </div>
                         )}
                       </div>
-                      
+
                       <div className="p-4">
                         <h3 className="text-white font-semibold mb-1 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:from-purple-400 group-hover:to-cyan-400 transition-all">
                           {map.name}
@@ -230,7 +232,7 @@ export default function Dashboard() {
       </div>
 
       {showDetailsPopup && selectedMapId && (
-        <MapDetailsPopup mapId={selectedMapId} onClose={() => setShowDetailsPopup(false)}/>
+        <MapDetailsPopup mapId={selectedMapId} onClose={() => setShowDetailsPopup(false)} />
       )}
     </AuthGuard>
   )
