@@ -78,7 +78,7 @@ module.exports.checkmap = async (req, res) => {
 
 module.exports.updateLayout = async (req, res) => {
     try {
-        const { token, mapId, rooms, obstacles } = req.body
+        const { token, mapId, rooms, decorations } = req.body
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
         const userId = decoded.id
 
@@ -87,10 +87,10 @@ module.exports.updateLayout = async (req, res) => {
         if (map.userId.toString() !== userId) return res.status(403).json({ msg: "Not the owner" })
 
         map.rooms = rooms || []
-        map.obstacles = obstacles || []
+        map.decorations = decorations || []
         await map.save()
 
-        return res.status(200).json({ msg: "Layout saved", rooms: map.rooms, obstacles: map.obstacles })
+        return res.status(200).json({ msg: "Layout saved", rooms: map.rooms, decorations: map.decorations })
     } catch (err) {
         return res.status(500).json({ msg: "Internal Server Error" })
     }
@@ -104,7 +104,7 @@ module.exports.getLayout = async (req, res) => {
 
         return res.status(200).json({
             rooms: map.rooms || [],
-            obstacles: map.obstacles || [],
+            decorations: map.decorations || [],
             ownerId: map.userId.toString()
         })
     } catch (err) {

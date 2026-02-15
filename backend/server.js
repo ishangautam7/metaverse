@@ -38,16 +38,16 @@ function getPlayerRoom(mapUID, playerId, rooms) {
     const player = players[mapUID]?.[playerId]
     if (!player || !player.position) return null
 
-    const px = player.position.x + 20 // center of 40px avatar
+    const px = player.position.x + 20
     const py = player.position.y + 20
 
     for (const room of rooms) {
         if (px >= room.x && px <= room.x + room.w &&
             py >= room.y && py <= room.y + room.h) {
-            return room.roomId
+            return room.roomId || room.name
         }
     }
-    return null // not in any room
+    return null
 }
 
 // Store rooms per map for quick lookup
@@ -68,28 +68,80 @@ io.on('connection', (socket) => {
 
         socket.join(mapUID)
 
-        // Send current players to the new user
         socket.emit('playersUpdate', players[mapUID])
-
-        // Notify others about the new player
         socket.to(mapUID).emit('playersUpdate', players[mapUID])
+
+        // Send current room states
+        const rooms = mapRooms[mapUID] || []
+        socket.emit('roomsUpdate', rooms)
     })
 
-    // Owner sends room layout so server can track rooms
+    // Owner or anyone sets room layout
     socket.on('setRooms', ({ mapUID, rooms }) => {
         mapRooms[mapUID] = rooms || []
+        io.to(mapUID).emit('roomsUpdate', mapRooms[mapUID])
+    })
+
+    // Any user inside a room can toggle its lock
+    socket.on('lockRoom', ({ mapUID, roomId, locked }) => {
+        const rooms = mapRooms[mapUID] || []
+        const senderRoom = getPlayerRoom(mapUID, socket.id, rooms)
+
+        // Only allow if sender is inside the room they're trying to lock
+        if (senderRoom === roomId) {
+            const room = rooms.find(r => (r.roomId || r.name) === roomId)
+            if (room) {
+                room.locked = locked
+                mapRooms[mapUID] = rooms
+                io.to(mapUID).emit('roomsUpdate', rooms)
+                io.to(mapUID).emit('roomLocked', { roomId, locked, lockedBy: players[mapUID]?.[socket.id]?.username })
+            }
+        }
     })
 
     socket.on('move', ({ mapUID, position }) => {
         if (players[mapUID]?.[socket.id]) {
             players[mapUID][socket.id].position = position
 
-            // Update current room
             const rooms = mapRooms[mapUID] || []
             const currentRoom = getPlayerRoom(mapUID, socket.id, rooms)
             players[mapUID][socket.id].currentRoom = currentRoom
 
-            io.to(mapUID).emit('playersUpdate', players[mapUID])
+            // Build filtered player list: hide players in locked rooms from outsiders
+            const allPlayers = players[mapUID]
+            const filteredForBroadcast = {}
+
+            for (const [pid, player] of Object.entries(allPlayers)) {
+                const pRoom = player.currentRoom
+                if (pRoom) {
+                    const room = rooms.find(r => (r.roomId || r.name) === pRoom)
+                    if (room?.locked) {
+                        // Only send to players in the same room
+                        continue
+                    }
+                }
+                filteredForBroadcast[pid] = player
+            }
+
+            // Send full data to players in locked rooms, filtered to others
+            for (const [pid] of Object.entries(allPlayers)) {
+                const pRoom = allPlayers[pid]?.currentRoom
+                if (pRoom) {
+                    const room = rooms.find(r => (r.roomId || r.name) === pRoom)
+                    if (room?.locked) {
+                        // This player is in a locked room — send them only players in same room + themselves
+                        const lockedRoomPlayers = {}
+                        for (const [id, p] of Object.entries(allPlayers)) {
+                            if (p.currentRoom === pRoom) {
+                                lockedRoomPlayers[id] = p
+                            }
+                        }
+                        io.to(pid).emit('playersUpdate', lockedRoomPlayers)
+                        continue
+                    }
+                }
+                io.to(pid).emit('playersUpdate', filteredForBroadcast)
+            }
         }
     })
 
@@ -99,7 +151,6 @@ io.on('connection', (socket) => {
 
         const senderRoom = user.currentRoom
 
-        // Broadcast chat only to players in the same room (or all if no rooms)
         const allPlayers = players[mapUID] || {}
         const chatMsg = { username: user.username, message }
 

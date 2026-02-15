@@ -1,72 +1,47 @@
-const mongoose = require("mongoose")
-const { v4: uuidv4 } = require("uuid")
-function generate12DigitUID() {
-    const timestamp = Date.now().toString().slice(-6);
-    const random = Math.floor(Math.random() * 900000 + 100000).toString();
-    return parseInt(timestamp + random);
-}
-
-const RoomSchema = new mongoose.Schema({
-    roomId: { type: String, default: uuidv4 },
-    name: { type: String, required: true },
-    x: { type: Number, required: true },
-    y: { type: Number, required: true },
-    w: { type: Number, required: true },
-    h: { type: Number, required: true },
-    locked: { type: Boolean, default: false },
-    color: { type: String, default: "#1a1a2e" }
-}, { _id: false })
-
-const ObstacleSchema = new mongoose.Schema({
-    obstacleId: { type: String, default: uuidv4 },
-    x: { type: Number, required: true },
-    y: { type: Number, required: true },
-    w: { type: Number, required: true },
-    h: { type: Number, required: true }
-}, { _id: false })
+const mongoose = require("mongoose");
 
 const MapSchema = new mongoose.Schema({
-    mapId: {
+    name: {
         type: String,
-        default: uuidv4,
-        unique: true
-    },
-    mapUID: {
-        type: Number,
-        default: generate12DigitUID,
-        unique: true
+        required: true,
     },
     width: {
         type: Number,
         required: true,
+        default: 1280,
     },
     height: {
         type: Number,
         required: true,
-    },
-    name: {
-        type: String,
-        required: true,
+        default: 720,
     },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true,
     },
-    image: {
-        type: String,
-        default: ""
+    mapUID: {
+        type: Number,
+        default: () => Math.floor(100000 + Math.random() * 900000),
     },
-    rooms: {
-        type: [RoomSchema],
-        default: []
-    },
-    obstacles: {
-        type: [ObstacleSchema],
-        default: []
-    }
-}, {
-    timestamps: true,
-})
+    rooms: [{
+        roomId: { type: String, default: () => Math.random().toString(36).slice(2, 10) },
+        name: { type: String, default: "Room" },
+        x: { type: Number, default: 0 },
+        y: { type: Number, default: 0 },
+        w: { type: Number, default: 200 },
+        h: { type: Number, default: 150 },
+        locked: { type: Boolean, default: false },
+        color: { type: String, default: "#1a1a2e" }
+    }],
+    decorations: [{
+        decorationId: { type: String, default: () => Math.random().toString(36).slice(2, 10) },
+        type: { type: String, default: "generic", enum: ["table", "plant", "bookshelf", "sofa", "desk", "divider", "lamp", "generic"] },
+        x: { type: Number, default: 0 },
+        y: { type: Number, default: 0 },
+        w: { type: Number, default: 60 },
+        h: { type: Number, default: 60 }
+    }]
+}, { timestamps: true });
 
 module.exports = mongoose.model("Map", MapSchema);
