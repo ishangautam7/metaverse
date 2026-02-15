@@ -66,7 +66,7 @@ export default function Dashboard() {
                 token,
                 mapId: res.data.map._id,
                 rooms: template.rooms,
-                obstacles: template.obstacles
+                decorations: template.decorations
               })
             } catch {
               // Layout save failed, map still created

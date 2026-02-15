@@ -71,8 +71,8 @@ export default function PopupForm({ onSubmit, onClose }: PopupFormProps) {
                   type="button"
                   onClick={() => setSelectedTemplate(t.id)}
                   className={`text-left p-3 rounded-lg border transition-all ${selectedTemplate === t.id
-                      ? "border-white bg-neutral-800"
-                      : "border-neutral-800 hover:border-neutral-600"
+                    ? "border-white bg-neutral-800"
+                    : "border-neutral-800 hover:border-neutral-600"
                     }`}
                 >
                   <div className="flex items-center gap-2 mb-1">
@@ -104,7 +104,7 @@ export default function PopupForm({ onSubmit, onClose }: PopupFormProps) {
           {/* Template info */}
           {selectedTemplate !== "blank" && (
             <div className="text-xs text-neutral-600 bg-neutral-950 border border-neutral-800 rounded-md px-3 py-2">
-              {template.rooms.length} rooms · {template.obstacles.length} objects · {template.width}×{template.height}px
+              {template.rooms.length} rooms · {template.decorations.length} objects · {template.width}×{template.height}px
             </div>
           )}
 
