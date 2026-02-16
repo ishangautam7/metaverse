@@ -161,13 +161,16 @@ io.on('connection', (socket) => {
         }
     })
 
-    // WebRTC signaling - only allow if same room
+    // WebRTC signaling - allow if same room or both in open area
     socket.on('webrtc-offer', ({ to, offer, mapUID }) => {
         const sender = players[mapUID]?.[socket.id]
         const receiver = players[mapUID]?.[to]
 
-        if (sender && receiver && sender.currentRoom === receiver.currentRoom) {
-            socket.to(to).emit('webrtc-offer', { from: socket.id, offer })
+        if (sender && receiver) {
+            // Allow if both in same named room or both in open area (null === null)
+            if (sender.currentRoom === receiver.currentRoom) {
+                socket.to(to).emit('webrtc-offer', { from: socket.id, offer })
+            }
         }
     })
 
@@ -175,8 +178,10 @@ io.on('connection', (socket) => {
         const sender = players[mapUID]?.[socket.id]
         const receiver = players[mapUID]?.[to]
 
-        if (sender && receiver && sender.currentRoom === receiver.currentRoom) {
-            socket.to(to).emit('webrtc-answer', { from: socket.id, answer })
+        if (sender && receiver) {
+            if (sender.currentRoom === receiver.currentRoom) {
+                socket.to(to).emit('webrtc-answer', { from: socket.id, answer })
+            }
         }
     })
 
@@ -184,8 +189,10 @@ io.on('connection', (socket) => {
         const sender = players[mapUID]?.[socket.id]
         const receiver = players[mapUID]?.[to]
 
-        if (sender && receiver && sender.currentRoom === receiver.currentRoom) {
-            socket.to(to).emit('webrtc-ice', { from: socket.id, candidate })
+        if (sender && receiver) {
+            if (sender.currentRoom === receiver.currentRoom) {
+                socket.to(to).emit('webrtc-ice', { from: socket.id, candidate })
+            }
         }
     })
 

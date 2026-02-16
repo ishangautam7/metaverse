@@ -34,7 +34,7 @@ export const usePeerVideo = ({ mapUID, username }: UsePeerVideoProps) => {
             autoGainControl: true
           }
         });
-        
+
         setLocalStream(stream);
         localStreamRef.current = stream;
 
@@ -43,10 +43,16 @@ export const usePeerVideo = ({ mapUID, username }: UsePeerVideoProps) => {
             iceServers: [
               { urls: 'stun:stun.l.google.com:19302' },
               { urls: 'stun:stun1.l.google.com:19302' },
+              {
+                urls: 'turn:57.159.31.86:3478',
+                username: 'admin',
+                credential: 'ishangautam',
+              },
+
             ]
           }
         });
-        
+
         myPeerRef.current = peer;
 
         peer.on('open', (peerId) => {

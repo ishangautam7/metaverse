@@ -22,6 +22,7 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
   const [players, setPlayers] = useState<PlayersMap>({});
   const [chatHistory, setChatHistory] = useState<Array<{ username: string; message: string; timestamp: string }>>([]);
   const peerConnectionsRef = useRef<{ [id: string]: RTCPeerConnection }>({});
+  const iceCandidateBufferRef = useRef<{ [id: string]: RTCIceCandidateInit[] }>({});
   const localStreamRef = useRef<MediaStream | null>(null);
   const hasJoinedRef = useRef(false);
   const socketIdRef = useRef<string | null>(null);
@@ -58,10 +59,17 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
-        { urls: 'stun:stun3.l.google.com:19302' },
-        { urls: 'stun:stun4.l.google.com:19302' },
-        { urls: 'stun:stun.services.mozilla.com' }
+        // TODO: Replace with your own TURN server credentials
+        // {
+        //   urls: 'turn:YOUR_TURN_SERVER:3478',
+        //   username: 'YOUR_USERNAME',
+        //   credential: 'YOUR_CREDENTIAL',
+        // },
+        // {
+        //   urls: 'turn:YOUR_TURN_SERVER:443?transport=tcp',
+        //   username: 'YOUR_USERNAME',
+        //   credential: 'YOUR_CREDENTIAL',
+        // },
       ]
     });
 
@@ -170,6 +178,7 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
         if (!serverPlayers[playerId]) {
           peerConnectionsRef.current[playerId].close();
           delete peerConnectionsRef.current[playerId];
+          delete iceCandidateBufferRef.current[playerId];
           setRemoteStreams(prev => {
             const newStreams = { ...prev };
             delete newStreams[playerId];
@@ -184,6 +193,7 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
         peerConnectionsRef.current[socketId].close();
         delete peerConnectionsRef.current[socketId];
       }
+      delete iceCandidateBufferRef.current[socketId];
       setRemoteStreams(prev => {
         const newStreams = { ...prev };
         delete newStreams[socketId];
@@ -224,6 +234,13 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
 
       try {
         await pc.setRemoteDescription(new RTCSessionDescription(offer));
+        // Flush buffered ICE candidates
+        const buffered = iceCandidateBufferRef.current[from] || [];
+        for (const c of buffered) {
+          try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch { /* skip invalid */ }
+        }
+        delete iceCandidateBufferRef.current[from];
+
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
 
@@ -242,6 +259,12 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
       if (pc && pc.signalingState === 'have-local-offer') {
         try {
           await pc.setRemoteDescription(new RTCSessionDescription(answer));
+          // Flush buffered ICE candidates
+          const buffered = iceCandidateBufferRef.current[from] || [];
+          for (const c of buffered) {
+            try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch { /* skip invalid */ }
+          }
+          delete iceCandidateBufferRef.current[from];
         } catch (err) {
           console.error(err)
         }
@@ -250,11 +273,19 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
 
     const handleWebRTCIce = async ({ from, candidate }: { from: string; candidate: RTCIceCandidateInit }) => {
       const pc = peerConnectionsRef.current[from];
-      if (pc && pc.remoteDescription) {
-        try {
-          await pc.addIceCandidate(new RTCIceCandidate(candidate));
-        } catch (err) {
-          console.error(err)
+      if (pc) {
+        if (pc.remoteDescription) {
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(candidate));
+          } catch (err) {
+            console.error(err)
+          }
+        } else {
+          // Buffer candidates until remoteDescription is set
+          if (!iceCandidateBufferRef.current[from]) {
+            iceCandidateBufferRef.current[from] = [];
+          }
+          iceCandidateBufferRef.current[from].push(candidate);
         }
       }
     };
