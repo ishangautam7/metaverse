@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { socket } from "../../lib/socket";
 import { PlayersMap } from "./types";
 
@@ -28,7 +28,6 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
   const socketIdRef = useRef<string | null>(null);
   const playersRef = useRef<PlayersMap>({});
 
-  // Update refs when values change
   useEffect(() => {
     localStreamRef.current = localStream;
   }, [localStream]);
@@ -54,24 +53,24 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
     };
   }, []);
 
-  const createPeerConnection = (peerId: string): RTCPeerConnection => {
-    const pc = new RTCPeerConnection({
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        // TODO: Replace with your own TURN server credentials
-        // {
-        //   urls: 'turn:YOUR_TURN_SERVER:3478',
-        //   username: 'YOUR_USERNAME',
-        //   credential: 'YOUR_CREDENTIAL',
-        // },
-        // {
-        //   urls: 'turn:YOUR_TURN_SERVER:443?transport=tcp',
-        //   username: 'YOUR_USERNAME',
-        //   credential: 'YOUR_CREDENTIAL',
-        // },
-      ]
-    });
+  const createPeerConnection = useCallback((peerId: string): RTCPeerConnection => {
+    const turnServer = process.env.NEXT_PUBLIC_TURN_SERVER || '';
+    const turnSecret = process.env.NEXT_PUBLIC_TURN_SECRET || '';
+
+    const iceServers: RTCIceServer[] = [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+    ];
+
+    if (turnServer) {
+      iceServers.push({
+        urls: turnServer,
+        username: 'ishan',
+        credential: turnSecret,
+      });
+    }
+
+    const pc = new RTCPeerConnection({ iceServers });
 
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => {
@@ -119,7 +118,7 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
 
     peerConnectionsRef.current[peerId] = pc;
     return pc;
-  };
+  }, [mapUID, setRemoteStreams]);
 
   // Initialize socket connection and join room
   useEffect(() => {
@@ -301,43 +300,52 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
     };
   }, [createPeerConnection]);
 
-  // Handle local stream changes
+  // Handle local stream changes — use replaceTrack for reliability
   useEffect(() => {
     if (!localStream) return;
 
+    let needsRenegotiation = false;
+
     Object.values(peerConnectionsRef.current).forEach(pc => {
-      pc.getSenders().forEach(sender => {
-        if (sender.track) {
-          pc.removeTrack(sender);
-        }
-      });
+      const senders = pc.getSenders();
 
       localStream.getTracks().forEach(track => {
-        pc.addTrack(track, localStream);
+        const existingSender = senders.find(s => s.track?.kind === track.kind);
+        if (existingSender) {
+          // Replace track on existing sender — no renegotiation needed
+          existingSender.replaceTrack(track).catch(err => console.error('replaceTrack error:', err));
+        } else {
+          // No sender for this track kind yet — add it (needs renegotiation)
+          pc.addTrack(track, localStream);
+          needsRenegotiation = true;
+        }
       });
     });
 
-    Object.entries(peerConnectionsRef.current).forEach(([playerId, pc]) => {
-      if (pc.signalingState === 'stable') {
-        setTimeout(async () => {
-          try {
-            const offer = await pc.createOffer({
-              offerToReceiveAudio: true,
-              offerToReceiveVideo: true
-            });
-            await pc.setLocalDescription(offer);
-            socket.emit('webrtc-offer', {
-              to: playerId,
-              offer: pc.localDescription,
-              mapUID
-            });
-          } catch (err) {
-            console.error(err)
-          }
-        }, 100);
-      }
-    });
-  }, [localStream]);
+    // Only renegotiate if we added new tracks (not just replaced)
+    if (needsRenegotiation) {
+      Object.entries(peerConnectionsRef.current).forEach(([playerId, pc]) => {
+        if (pc.signalingState === 'stable') {
+          setTimeout(async () => {
+            try {
+              const offer = await pc.createOffer({
+                offerToReceiveAudio: true,
+                offerToReceiveVideo: true
+              });
+              await pc.setLocalDescription(offer);
+              socket.emit('webrtc-offer', {
+                to: playerId,
+                offer: pc.localDescription,
+                mapUID
+              });
+            } catch (err) {
+              console.error('Renegotiation error:', err);
+            }
+          }, 100);
+        }
+      });
+    }
+  }, [localStream, mapUID]);
 
   // Handle position updates
   useEffect(() => {
