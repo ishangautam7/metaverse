@@ -21,6 +21,7 @@ interface UseSocketProps {
 export const useSocket = ({ mapUID, username, position, localStream, setRemoteStreams }: UseSocketProps) => {
   const [players, setPlayers] = useState<PlayersMap>({});
   const [chatHistory, setChatHistory] = useState<Array<{ username: string; message: string; timestamp: string }>>([]);
+
   const peerConnectionsRef = useRef<{ [id: string]: RTCPeerConnection }>({});
   const iceCandidateBufferRef = useRef<{ [id: string]: RTCIceCandidateInit[] }>({});
   const localStreamRef = useRef<MediaStream | null>(null);
@@ -153,23 +154,27 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
         if (playerId !== currentSocketId && !peerConnectionsRef.current[playerId]) {
           const pc = createPeerConnection(playerId);
 
-          // Create offer regardless of local stream (receive-only is fine)
-          setTimeout(async () => {
-            try {
-              const offer = await pc.createOffer({
-                offerToReceiveAudio: true,
-                offerToReceiveVideo: true
-              });
-              await pc.setLocalDescription(offer);
-              socket.emit('webrtc-offer', {
-                to: playerId,
-                offer: pc.localDescription,
-                mapUID
-              });
-            } catch (err) {
-              console.error('Error creating offer:', err);
-            }
-          }, 200);
+          // Asymmetric connection initiation to avoid WebRTC Glare Exception.
+          // Only the peer with the lexicographically smaller socket ID initiates the offer.
+          if (currentSocketId < playerId) {
+            // Create offer regardless of local stream (receive-only is fine)
+            setTimeout(async () => {
+              try {
+                const offer = await pc.createOffer({
+                  offerToReceiveAudio: true,
+                  offerToReceiveVideo: true
+                });
+                await pc.setLocalDescription(offer);
+                socket.emit('webrtc-offer', {
+                  to: playerId,
+                  offer: pc.localDescription,
+                  mapUID
+                });
+              } catch (err) {
+                console.error('Error creating offer:', err);
+              }
+            }, 200);
+          }
         }
       });
 
@@ -208,7 +213,6 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
     socket.on("playersUpdate", handlePlayersUpdate);
     socket.on("playersLeft", handlePlayersLeft);
 
-    // Chat message handler
     const handleChatMessage = ({ username: senderUsername, message }: { username: string; message: string }) => {
       const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       setChatHistory(prev => [...prev, { username: senderUsername, message, timestamp }]);
@@ -309,6 +313,17 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
     Object.values(peerConnectionsRef.current).forEach(pc => {
       const senders = pc.getSenders();
 
+      // Remove senders for tracks that are no longer in the new localStream
+      senders.forEach(sender => {
+        if (sender.track) {
+          const trackStillExists = localStream.getTracks().find(t => t.kind === sender.track!.kind);
+          if (!trackStillExists) {
+            pc.removeTrack(sender);
+            needsRenegotiation = true;
+          }
+        }
+      });
+
       localStream.getTracks().forEach(track => {
         const existingSender = senders.find(s => s.track?.kind === track.kind);
         if (existingSender) {
@@ -378,8 +393,14 @@ export const useSocket = ({ mapUID, username, position, localStream, setRemoteSt
     };
   }, []);
 
-  const sendChatMessage = (message: string) => {
-    socket.emit("chat", { mapUID, message });
+  const sendChatMessage = (message: string, toTarget?: string) => {
+    socket.emit("chat", { mapUID, message, toTarget });
+    
+    // Optimistically add our own whisper to the chat history
+    if (toTarget) {
+      const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setChatHistory(prev => [...prev, { username: `To ${toTarget}`, message, timestamp, isWhisper: true }]);
+    }
   };
 
   return { players, chatHistory, sendChatMessage };

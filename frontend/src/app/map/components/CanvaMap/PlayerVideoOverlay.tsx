@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface PlayerVideoOverlayProps {
   stream: MediaStream | null;
@@ -10,6 +10,7 @@ interface PlayerVideoOverlayProps {
 
 export const PlayerVideoOverlay = ({ stream, position, camera, viewPortSize, username }: PlayerVideoOverlayProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [showControls, setShowControls] = useState(false);
   const videoSize = 80;
   const avatarSize = 40;
 
@@ -32,6 +33,32 @@ export const PlayerVideoOverlay = ({ stream, position, camera, viewPortSize, use
       }
     };
   }, [stream, username]);
+
+  useEffect(() => {
+    if (!videoRef.current) return;
+
+    // The local player's true coordinate is roughly camera.x + viewPortSize.width / 2
+    // camera.x is the top-left offset of the viewport
+    const localX = camera.x + viewPortSize.width / 2;
+    const localY = camera.y + viewPortSize.height / 2;
+
+    const dx = localX - position.x;
+    const dy = localY - position.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    // Max hearing distance = 600px. Falloff from 100px.
+    const maxVolumeDist = 100;
+    const dropoffDist = 600;
+
+    let volume = 1;
+    if (distance > dropoffDist) {
+      volume = 0;
+    } else if (distance > maxVolumeDist) {
+      volume = 1 - (distance - maxVolumeDist) / (dropoffDist - maxVolumeDist);
+    }
+
+    videoRef.current.volume = Math.max(0, Math.min(1, volume));
+  }, [camera.x, camera.y, position.x, position.y, viewPortSize.width, viewPortSize.height]);
 
   // Don't render if no stream or stream has no active tracks
   if (!stream) return null;
@@ -62,7 +89,7 @@ export const PlayerVideoOverlay = ({ stream, position, camera, viewPortSize, use
 
   return (
     <div
-      className="absolute z-50 pointer-events-none transition-all duration-75 ease-linear"
+      className={`absolute z-50 transition-all duration-75 ease-linear ${hasVideo ? 'pointer-events-auto' : 'pointer-events-none'}`}
       style={{
         left: `${videoX}px`,
         top: `${videoY}px`,
@@ -70,47 +97,54 @@ export const PlayerVideoOverlay = ({ stream, position, camera, viewPortSize, use
         height: `${videoSize}px`,
         transform: 'translateZ(0)', // Force hardware acceleration
       }}
+      onMouseEnter={() => setShowControls(true)}
+      onMouseLeave={() => setShowControls(false)}
     >
-      {hasVideo ? (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          className={`w-full h-full rounded-lg shadow-lg bg-black object-cover ${isScreenShare
-              ? 'border-2 border-blue-400'
-              : 'border-2 border-purple-400'
-            }`}
-        />
-      ) : (
-        // Show audio-only indicator when only audio is active
-        <div className="w-full h-full rounded-lg shadow-lg bg-gray-800 border-2 border-green-400 flex items-center justify-center">
-          <div className="text-white text-center">
-            <div className="text-2xl mb-1">🎤</div>
-            <div className="text-xs">Audio</div>
-          </div>
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        className={`${hasVideo ? 'block' : 'hidden'} w-full h-full rounded-lg shadow-lg bg-black object-cover ${isScreenShare
+            ? 'border-2 border-blue-400'
+            : 'border-2 border-purple-400'
+          }`}
+      />
+      
+      {/* Hide the visual overlay completely if there's no video as requested */}
+      {hasVideo && (
+        <div className={`absolute -bottom-6 left-0 right-0 text-white text-center py-1 text-xs truncate rounded ${isScreenShare ? 'bg-blue-600 bg-opacity-90' : 'bg-purple-600 bg-opacity-90'}`}>
+          {username} {isScreenShare && "(Screen)"}
         </div>
       )}
 
-      {/* Username label */}
-      <div className={`absolute -bottom-6 left-0 right-0 text-white text-center py-1 text-xs truncate rounded ${isScreenShare
-          ? 'bg-blue-600 bg-opacity-90'
-          : hasVideo
-            ? 'bg-purple-600 bg-opacity-90'
-            : 'bg-green-600 bg-opacity-90'
-        }`}>
-        {username} {isScreenShare ? "(Screen)" : !hasVideo ? "(Audio)" : ""}
-      </div>
-
       {/* Screen share indicator */}
-      {isScreenShare && (
+      {isScreenShare && hasVideo && (
         <div className="absolute -top-2 -right-2 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
           <div className="w-2 h-2 bg-white rounded-sm"></div>
         </div>
       )}
 
       {/* Live indicator - different colors for different states */}
-      <div className={`absolute top-1 left-1 w-2 h-2 rounded-full opacity-75 animate-pulse ${hasVideo ? 'bg-green-500' : 'bg-yellow-500'
-        }`}></div>
+      {hasVideo && (
+         <div className="absolute top-1 left-1 w-2 h-2 rounded-full opacity-75 animate-pulse bg-green-500"></div>
+      )}
+
+      {/* Fullscreen control */}
+      {hasVideo && showControls && (
+        <button 
+          className="absolute inset-0 m-auto w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full text-white flex items-center justify-center backdrop-blur-sm transition-colors cursor-pointer"
+          onClick={() => {
+            if (videoRef.current) {
+              if (videoRef.current.requestFullscreen) {
+                videoRef.current.requestFullscreen();
+              }
+            }
+          }}
+          title="Fullscreen"
+        >
+          ⤢
+        </button>
+      )}
     </div>
   );
 };

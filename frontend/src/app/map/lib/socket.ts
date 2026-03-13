@@ -1,5 +1,7 @@
 import { io, Socket } from "socket.io-client";
 
+import { host } from "@/utils/Routes";
+
 // const BACKEND_URL =
 //   process.env.NODE_ENV === "prod"
 //     ? "https://metaverse-lrym.onrender.com"
@@ -8,7 +10,7 @@ import { io, Socket } from "socket.io-client";
 //     ? "http://192.168.1.5:4000"
 //     : "http://localhost:4000";
 
-const BACKEND_URL = "https://metaverse-lrym.onrender.com"
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || host
 
 export const socket: Socket = io(BACKEND_URL, {
   transports: ['websocket', 'polling'],

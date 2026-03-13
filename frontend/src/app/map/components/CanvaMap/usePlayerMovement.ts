@@ -7,9 +7,11 @@ interface UsePlayerMovementProps {
   decorations: Decoration[];
   rooms: Room[];
   editMode: boolean;
+  onRoomAccessRequested: (room: Room) => void;
+  unlockedRooms: Set<string>;
 }
 
-export const usePlayerMovement = ({ width, height, decorations, rooms, editMode }: UsePlayerMovementProps) => {
+export const usePlayerMovement = ({ width, height, decorations, rooms, editMode, onRoomAccessRequested, unlockedRooms }: UsePlayerMovementProps) => {
   const [position, setPosition] = useState<Position>({ x: 300, y: 300 });
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0 });
   const [viewPortSize, setViewPortSize] = useState<ViewPortSize>({ width: 0, height: 0 });
@@ -105,9 +107,14 @@ export const usePlayerMovement = ({ width, height, decorations, rooms, editMode 
         const newPos = { x: newX, y: newY };
 
         // Collision check: pass old AND new position
-        if (!checkCollision(prev, newPos, avatarSize, decorations, rooms)) {
+        const collisionResult = checkCollision(prev, newPos, avatarSize, decorations, rooms, unlockedRooms);
+        if (collisionResult === false) {
           positionRef.current = newPos;
           setPosition(newPos);
+        } else if (typeof collisionResult === 'object') {
+          // It's a locked room that we need a passcode for
+          onRoomAccessRequested(collisionResult);
+          // Block movement this frame
         }
 
         setDirection(dir);
@@ -157,8 +164,9 @@ function checkCollision(
   newPos: Position,
   avatarSize: number,
   decorations: Decoration[],
-  rooms: Room[]
-): boolean {
+  rooms: Room[],
+  unlockedRooms: Set<string>
+): boolean | Room {
   const playerRect = {
     x: newPos.x,
     y: newPos.y,
@@ -195,9 +203,19 @@ function checkCollision(
       newCy >= room.y && newCy <= room.y + room.h;
 
     // Block entry from outside
-    if (!wasInside && isInside) return true;
-    // Block exit from inside (optional: keep players trapped when room is locked)
-    // if (wasInside && !isInside) return true;
+    if (!wasInside && isInside) {
+      const id = room.roomId || room.name;
+      if (unlockedRooms.has(id)) {
+        // We've already entered the passcode for this session
+        continue;
+      }
+      
+      if (room.passcode && room.passcode.trim().length > 0) {
+         // Return the room so the caller can trigger a passcode prompt
+         return room;
+      }
+      return true; // Block silently if locked without passcode
+    }
   }
 
   return false;

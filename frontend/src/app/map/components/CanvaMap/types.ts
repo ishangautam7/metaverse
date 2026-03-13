@@ -43,5 +43,6 @@ export interface Room {
     w: number;
     h: number;
     locked: boolean;
+    passcode?: string;
     color: string;
 }

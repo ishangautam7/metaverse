@@ -145,21 +145,33 @@ io.on('connection', (socket) => {
         }
     })
 
-    socket.on('chat', ({ mapUID, message }) => {
+    socket.on('chat', ({ mapUID, message, toTarget }) => {
         const user = players[mapUID]?.[socket.id]
         if (!user) return
 
         const senderRoom = user.currentRoom
-
         const allPlayers = players[mapUID] || {}
-        const chatMsg = { username: user.username, message }
-
-        for (const [pid, player] of Object.entries(allPlayers)) {
-            if (player.currentRoom === senderRoom) {
-                io.to(pid).emit('chatMsg', chatMsg)
+        
+        if (toTarget) {
+            // Direct message
+            const targetEntry = Object.entries(allPlayers).find(([_, p]) => p.username === toTarget)
+            if (targetEntry) {
+                const targetSocketId = targetEntry[0]
+                const chatMsg = { username: user.username, message, isWhisper: true }
+                io.to(targetSocketId).emit('chatMsg', chatMsg)
+            }
+        } else {
+            // Room wide chat
+            const chatMsg = { username: user.username, message }
+            for (const [pid, player] of Object.entries(allPlayers)) {
+                if (player.currentRoom === senderRoom) {
+                    io.to(pid).emit('chatMsg', chatMsg)
+                }
             }
         }
     })
+
+
 
     // WebRTC signaling - allow if same room or both in open area
     socket.on('webrtc-offer', ({ to, offer, mapUID }) => {

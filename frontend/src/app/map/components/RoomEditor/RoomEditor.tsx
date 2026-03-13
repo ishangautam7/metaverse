@@ -167,6 +167,17 @@ export const RoomEditor = ({ mapId, rooms, decorations, currentAvatar, onUpdate,
                                             </div>
                                         ))}
                                     </div>
+                                    {room.locked && (
+                                        <div className="mt-2">
+                                            <input
+                                                type="text"
+                                                value={(room as any).passcode || ""}
+                                                onChange={(e) => updateRoom(i, "passcode", e.target.value)}
+                                                className="w-full bg-neutral-800 border border-neutral-700 rounded px-2 py-1.5 text-xs text-white outline-none focus:border-red-400"
+                                                placeholder="Set a passcode (optional)"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                             <button onClick={addRoom}

@@ -51,7 +51,6 @@ module.exports.login = async (req, res, next) => {
         if (!isMatch) {
             return res.status(400).json({ msg: 'Invalid credentials' });
         }
-
         const token = generateToken(user._id);
         return res.status(200).json({
             msg: "Login successful",

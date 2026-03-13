@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+﻿import { useEffect, useRef } from "react";
 import { PlayersMap, Position, Camera, ViewPortSize, Decoration, Room } from "./types";
 import { AVATAR_PRESETS } from "../AvatarPicker/avatarPresets";
 
@@ -21,7 +21,7 @@ interface UseCanvasDrawingProps {
 
 const avatarImageCache: { [key: string]: HTMLImageElement } = {};
 
-export function getAvatarImage(avatarKey: string): HTMLImageElement | null {
+function getAvatarImage(avatarKey: string): HTMLImageElement | null {
   if (avatarImageCache[avatarKey]) return avatarImageCache[avatarKey];
 
   let src: string;
@@ -156,7 +156,7 @@ function drawRooms(ctx: CanvasRenderingContext2D, camera: Camera, rooms: Room[],
     ctx.font = "600 11px Inter, system-ui, sans-serif";
     ctx.fillStyle = room.locked ? "#ef4444" : "#525252";
     ctx.textAlign = "left";
-    const label = room.locked ? `🔒 ${room.name}` : room.name;
+    const label = room.locked ? `≡ƒöÆ ${room.name}` : room.name;
     ctx.fillText(label, dx + 8, dy + 16);
 
     // Edit mode: show drag handles
@@ -170,13 +170,13 @@ function drawRooms(ctx: CanvasRenderingContext2D, camera: Camera, rooms: Room[],
 // Decoration drawing with distinct shapes per type
 const DECORATION_COLORS: Record<string, { fill: string; stroke: string; label: string }> = {
   table: { fill: "#d4a574", stroke: "#a67c52", label: "T" },
-  plant: { fill: "#86efac", stroke: "#22c55e", label: "🌱" },
+  plant: { fill: "#86efac", stroke: "#22c55e", label: "≡ƒî▒" },
   bookshelf: { fill: "#c4b5fd", stroke: "#8b5cf6", label: "B" },
   sofa: { fill: "#fca5a5", stroke: "#ef4444", label: "S" },
   desk: { fill: "#d6d3d1", stroke: "#78716c", label: "D" },
   divider: { fill: "#e5e7eb", stroke: "#9ca3af", label: "|" },
   lamp: { fill: "#fde68a", stroke: "#f59e0b", label: "L" },
-  generic: { fill: "#d4d4d8", stroke: "#a1a1aa", label: "○" },
+  generic: { fill: "#d4d4d8", stroke: "#a1a1aa", label: "Γùï" },
 };
 
 function drawDecorations(ctx: CanvasRenderingContext2D, camera: Camera, decorations: Decoration[], editMode: boolean) {
@@ -303,18 +303,20 @@ function drawSinglePlayer(
 
   // Avatar image or fallback
   const img = getAvatarImage(avatarKey);
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.closePath();
-  ctx.clip();
   if (img) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
     ctx.drawImage(img, drawX, drawY, avatarSize, avatarSize);
+    ctx.restore();
   } else {
     ctx.fillStyle = isSelf ? "#3b82f6" : "#6b7280";
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.fill();
   }
-  ctx.restore();
 
   // Border ring
   ctx.strokeStyle = isSelf ? "#fff" : "rgba(255,255,255,0.8)";
@@ -344,6 +346,4 @@ function drawSinglePlayer(
     ctx.fillStyle = "#fff";
     ctx.fillText("YOU", cx, drawY + avatarSize + 14);
   }
-
-
 }

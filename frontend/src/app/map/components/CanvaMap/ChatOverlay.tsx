@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 
 interface ChatOverlayProps {
-  onSendMessage: (message: string) => void;
-  chatHistory: Array<{ username: string; message: string; timestamp: string }>;
+  onSendMessage: (message: string, toTarget?: string) => void;
+  chatHistory: Array<{ username: string; message: string; timestamp: string; isWhisper?: boolean }>;
+  players: any; // We just need the usernames
 }
 
-export const ChatOverlay = ({ onSendMessage, chatHistory }: ChatOverlayProps) => {
+export const ChatOverlay = ({ onSendMessage, chatHistory, players }: ChatOverlayProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showMessages, setShowMessages] = useState(false);
   const [message, setMessage] = useState('');
+  const [whisperTarget, setWhisperTarget] = useState<string | null>(null);
+  
   const inputRef = useRef<HTMLInputElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -30,7 +33,7 @@ export const ChatOverlay = ({ onSendMessage, chatHistory }: ChatOverlayProps) =>
     if (isOpen) {
       const handleKeyPress = (e: KeyboardEvent) => {
         if (e.key === 'Enter' && message.trim()) {
-          onSendMessage(message);
+          onSendMessage(message, whisperTarget || undefined);
           setMessage('');
           setIsOpen(false);
           setShowMessages(true);
@@ -42,13 +45,36 @@ export const ChatOverlay = ({ onSendMessage, chatHistory }: ChatOverlayProps) =>
         } else if (e.key === 'Escape') {
           setIsOpen(false);
           setMessage('');
+        } else if (e.key === 'Tab') {
+          e.preventDefault();
+          
+          const currentUserUsername = JSON.parse(localStorage.getItem('user') || '{}').username;
+          const availablePlayers = Object.values(players || {})
+            .map((p: any) => p.username || p.email) 
+            .filter(u => u && u !== currentUserUsername);
+          
+          if (availablePlayers.length === 0) {
+            setWhisperTarget(null);
+            return;
+          }
+
+          if (!whisperTarget) {
+            setWhisperTarget(availablePlayers[0]);
+          } else {
+            const idx = availablePlayers.indexOf(whisperTarget);
+            if (idx === -1 || idx === availablePlayers.length - 1) {
+              setWhisperTarget(null); // cycle back to "all"
+            } else {
+              setWhisperTarget(availablePlayers[idx + 1]);
+            }
+          }
         }
       };
 
       window.addEventListener('keydown', handleKeyPress);
       return () => window.removeEventListener('keydown', handleKeyPress);
     }
-  }, [isOpen, message, onSendMessage]);
+  }, [isOpen, message, onSendMessage, whisperTarget, players]);
 
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -100,22 +126,29 @@ export const ChatOverlay = ({ onSendMessage, chatHistory }: ChatOverlayProps) =>
             {chatHistory.map((msg, index) => (
               <div key={index} className="text-sm">
                 <div className="flex items-baseline gap-2">
-                  <span className="font-semibold text-white">{msg.username}</span>
+                  <span className={`font-semibold ${msg.isWhisper ? 'text-pink-400' : 'text-white'}`}>
+                    {msg.isWhisper ? `${msg.username} (Whisper)` : msg.username}
+                  </span>
                   <span className="text-gray-400 text-xs">{msg.timestamp}</span>
                 </div>
-                <div className="text-gray-200">{msg.message}</div>
+                <div className={`${msg.isWhisper ? 'text-pink-200' : 'text-gray-200'}`}>
+                  {msg.message}
+                </div>
               </div>
             ))}
           </div>
 
           {isOpen && (
-            <div className="p-2 border-t border-white/20">
+            <div className="p-2 border-t border-white/20 flex items-center gap-2">
+              {whisperTarget && (
+                <span className="text-pink-400 text-sm whitespace-nowrap font-medium">To {whisperTarget}:</span>
+              )}
               <input
                 ref={inputRef}
                 type="text"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Type a message..."
+                placeholder={whisperTarget ? "Whisper message..." : "Type a message to room (Tab to cycle players)"}
                 className="w-full bg-transparent border-none outline-none text-white placeholder-gray-400"
                 autoFocus
               />
