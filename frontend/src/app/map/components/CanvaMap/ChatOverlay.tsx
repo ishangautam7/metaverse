@@ -11,7 +11,7 @@ export const ChatOverlay = ({ onSendMessage, chatHistory, players }: ChatOverlay
   const [showMessages, setShowMessages] = useState(false);
   const [message, setMessage] = useState('');
   const [whisperTarget, setWhisperTarget] = useState<string | null>(null);
-  
+
   const inputRef = useRef<HTMLInputElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -47,12 +47,12 @@ export const ChatOverlay = ({ onSendMessage, chatHistory, players }: ChatOverlay
           setMessage('');
         } else if (e.key === 'Tab') {
           e.preventDefault();
-          
+
           const currentUserUsername = JSON.parse(localStorage.getItem('user') || '{}').username;
           const availablePlayers = Object.values(players || {})
-            .map((p: any) => p.username || p.email) 
+            .map((p: any) => p.username || p.email)
             .filter(u => u && u !== currentUserUsername);
-          
+
           if (availablePlayers.length === 0) {
             setWhisperTarget(null);
             return;
@@ -109,7 +109,7 @@ export const ChatOverlay = ({ onSendMessage, chatHistory, players }: ChatOverlay
     <div className="fixed bottom-6 left-6 z-40 w-80 pointer-events-none">
       {!isOpen && !showMessages && (
         <div className="bg-black/70 backdrop-blur-sm text-white border border-white/20 rounded-lg text-sm px-3 py-2 pointer-events-auto">
-          💬 Press ENTER to chat
+          Press ENTER to chat
         </div>
       )}
 
